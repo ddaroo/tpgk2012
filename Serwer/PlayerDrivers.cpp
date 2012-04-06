@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "PlayerDrivers.h"
 #include "Serwer.h"
 #include "Dictionary.h"

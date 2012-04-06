@@ -3,19 +3,20 @@ SERWER SCRABBLE
 
 CODING GUIDELINES
 
-Z≥ota regu≥a
-Nie ma gorszego z≥a niø powielanie kodu. Kto rozpoczyna dodawanie ficzera od skopiowania kawa≥ka istniejπcego kodu, ten juø przegra≥.
+Z≈Çota regu≈Ça
+Nie ma gorszego z≈Ça ni≈º powielanie kodu. Kto rozpoczyna dodawanie ficzera od skopiowania kawa≈Çka istniejƒÖcego kodu, ten ju≈º przegra≈Ç.
 
 Dobre rady
-* Unikamy wskaünikÛw w stylu C. Gdzie to moøliwe, stosujemy semantykÍ wartoúci, w dalszej kolejnoúci sprytne wskaüniki.
-* Unikamy przeroúniÍtych funkcji. Wydzielenie kawa≥ka kodu do nazwanej funkcji jest waønym czynnikiem samodokumentujacym kod.
-
+* Unikamy wska≈∫nik√≥w w stylu C. Gdzie to mo≈ºliwe, stosujemy semantykƒô warto≈õci, w dalszej kolejno≈õci sprytne wska≈∫niki.
+* Unikamy przero≈õniƒôtych funkcji. Wydzielenie kawa≈Çka kodu do nazwanej funkcji jest wa≈ºnym czynnikiem samodokumentujacym kod.
+* Kodowanie znak√≥w dla plik√≥w to utf8.
+* Polskie komentarze tak≈ºe tych do commit-√≥w.
 
 Formatowanie
-WciÍcia robimy tabami. Tab odpowiada czterem spacjom.
+Wciƒôcia robimy tabami. Tab odpowiada czterem spacjom.
 
-JÍzykowe
-Dopuszczamy nowe funkcjonalnoúci ze standardu C++11, ktÛre sπ wspierane zarÛwno przez VC10 jak i GCC 4.5. Obejmuje to lambda-wyraøenia, referencje do r-wartoúci, deklarator auto, decltype i parÍ innych drobiazgÛw.
+Jƒôzykowe
+Dopuszczamy nowe funkcjonalno≈õci ze standardu C++11, kt√≥re sƒÖ wspierane zar√≥wno przez VC10 jak i GCC 4.5. Obejmuje to lambda-wyra≈ºenia, referencje do r-warto≈õci, deklarator auto, decltype i parƒô innych drobiazg√≥w.
 
 
 

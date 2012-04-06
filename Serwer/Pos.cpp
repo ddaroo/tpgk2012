@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "Pos.h"
 
 Pos::Pos()
@@ -84,9 +84,9 @@ ostream & operator<<(ostream &out, const Pos &p)
 	return out << p.toString();
 }
 
-EOrientation flip(EOrientation or)
+EOrientation flip(EOrientation orien)
 {
-	switch(or)
+	switch(orien)
 	{
 	case HORIZONTAL:	return VERTICAL;
 	case VERTICAL:		return HORIZONTAL;

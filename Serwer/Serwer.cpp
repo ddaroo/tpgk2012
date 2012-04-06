@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "Serwer.h"
 #include "StopWatch.h"
 #include "Dictionary.h"
@@ -68,7 +68,7 @@ CBoard::CBoard()
 		tile(p1).bonus = tile(p2).bonus = tile(p3).bonus = tile(p4).bonus = bonus;
 	};
 
-	//uklad bonusów wg http://hjkgfg.fm.interia.pl/Scrabble-plansza-rys.bmp
+	//uklad bonusÃ³w wg http://hjkgfg.fm.interia.pl/Scrabble-plansza-rys.bmp
 
 	//przekatne
 	setSymmetrically(0, 0, tripleWord);
@@ -334,7 +334,8 @@ struct ActionApplier : boost::static_visitor<>
 void CGameState::applyAction(const TAction &action)
 {
 	//wywola nam applyAction z odpowiednia akcja w argumencie
-	action.apply_visitor(ActionApplier(*this, players[activePlayer]));
+	auto actap = ActionApplier(*this, players[activePlayer]);
+	action.apply_visitor(actap);
 }
 
 struct PointsForWordsAccumulator
@@ -365,6 +366,8 @@ public:
 			break;
 		case CTile::Bonus::LETTER:
 			multiplierForThisLetter += t.bonus.multiplicatorValue;
+			break;
+		default:
 			break;
 		}
 

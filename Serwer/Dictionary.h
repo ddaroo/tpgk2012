@@ -19,7 +19,7 @@ class CDictionary : boost::noncopyable
 	vector<char> memory; //we keep all words in one big memory block -> kazde slowo to ciag znakow odseparowany z obu stron NULL-ami (pierwszy bajt to tez NULL!)
 
 
-	vector<const CWord> words; //indeks slow
+	vector<CWord> words; //indeks slow
 
 	//helpers for creating -> funkcje nalezy wolac w kolejnosci deklaracji 
 	void prepareMemory(crstring fname); //alokuje pamiec

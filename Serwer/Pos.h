@@ -28,7 +28,7 @@ char intToChar(int i); //pomocnicza funkcja do oznaczania numerow wierszy/kolumn
 
 enum EOrientation {HORIZONTAL = 0, VERTICAL = 1, INVALID};
 
-EOrientation flip(EOrientation or);
+EOrientation flip(EOrientation orien);
 EOrientation orientationOfPos(const Pos &a, const Pos &b); //sprawdza, czy litery leza na prostej poziomej czy pionowej
 
 static const EOrientation orientations[] = {HORIZONTAL, VERTICAL};

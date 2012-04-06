@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 	system("chcp 1250"); //zeby polskie znaki sie wyswietlaly (UWAGA - nie dziala z rastrowymi czcionkami w cmd.exe)
 #endif
-	cout << "Polskie znaki:\n\tzazolc gesla jazn\n\tza¿ó³æ gêœl¹ jaŸñ\n";
+	cout << "Polskie znaki:\n\tzazolc gesla jazn\n\tzaÅ¼Ã³Å‚Ä‡ gÄ™Å›lÄ… jaÅºÅ„\n";
 	try
 	{
 		po::variables_map vm; //tu trzymamy parametry przekazane w linii komend
@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
 
 		assert(dict.contains("hybryda"));
 		assert(!dict.contains("hyrbyda"));
-		assert(dict.contains("za¿ó³æ"));
-		assert(!dict.contains("za¿ólæ"));
+		assert(dict.contains("zaÅ¼Ã³Å‚Ä‡"));
+		assert(!dict.contains("zaÅ¼Ã³lÄ‡"));
 
 		CSerwer s;
 		s.run();
