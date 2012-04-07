@@ -44,10 +44,10 @@ int main(int argc, char *argv[])
 
 		CDictionary dict(vm["dictionary"].as<string>());
 
-		assert(dict.contains("hybryda"));
-		assert(!dict.contains("hyrbyda"));
-		assert(dict.contains("zażółć"));
-		assert(!dict.contains("zażólć"));
+// 		assert(dict.contains("hybryda"));
+// 		assert(!dict.contains("hyrbyda"));
+// 		assert(dict.contains("zażółć"));
+// 		assert(!dict.contains("zażólć"));
 
 		CSerwer s;
 		s.run();

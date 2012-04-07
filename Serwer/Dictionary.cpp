@@ -30,7 +30,7 @@ CWord & CWord::operator=(CWord && rhs)
 
 bool CWord::operator<(const CWord &rhs) const
 {
-	return strcmp(ptr, rhs.ptr) == -1;
+	return strcmp(ptr, rhs.ptr) < 0;
 }
 
 CDictionary::CDictionary(crstring fname)

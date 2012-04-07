@@ -1,14 +1,14 @@
-//Spis dostÄ™pnych w grze literek
+//Spis dostêpnych w grze literek
 //Format (sepratorem tab):
-//litera	liczba_pÅ‚ytek	punkty
+//litera	liczba_p³ytek	punkty
 a	9	1
-Ä…	1	5
+¹	1	5
 b	2	3
 c	3	2
-Ä‡	1	6
+æ	1	6
 d	3	2
 e	7	1
-Ä™	1	5
+ê	1	5
 f	1	5
 g	2	3
 h	2	3
@@ -16,21 +16,21 @@ i	8	1
 j	2	3
 k	3	2
 l	3	2
-Å‚	2	3
+³	2	3
 m	3	2
 n	5	1
-Å„	1	7
+ñ	1	7
 o	6	1
-Ã³	1	5
+ó	1	5
 p	3	2
 r	4	1
 s	4	1
-Å›	1	5
+œ	1	5
 t	3	2
 u	2	3
 w	4	1
 y	4	2
 z	5	1
-Åº	1	9
-Å¼	1	5
+Ÿ	1	9
+¿	1	5
 _	2	0
