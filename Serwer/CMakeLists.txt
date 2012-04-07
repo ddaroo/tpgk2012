@@ -1,12 +1,12 @@
 project(TPServer)
 cmake_minimum_required(VERSION 2.6)
 
-find_package(Boost COMPONENTS program_options filesystem thread REQUIRED)
+find_package(Boost COMPONENTS program_options filesystem system thread REQUIRED)
 
 # where to look for cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_HOME_DIRECTORY}/cmake_modules )
 
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wclobbered -Wempty-body -Wignored-qualifiers -Wmissing-field-initializers -Wsign-compare -Wtype-limits -Wuninitialized")
