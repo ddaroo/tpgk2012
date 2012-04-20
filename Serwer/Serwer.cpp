@@ -329,6 +329,7 @@ struct ActionApplier : boost::static_visitor<>
 			//TODO - obsluzyc jakos lagodniej, niz wywalac program
 			throw runtime_error("Illegal action attempted!");
 		}
+		LOGL("Action has been correctly validated.");
 		gs.applyAction(pl);
 	}
 };
@@ -433,7 +434,7 @@ void CGameState::applyAction(const SkipTurn &action)
 void CGameState::applyAction(const ExchangeLetters &action)
 {
 	CPlayerState &ps = players[activePlayer];
-	LOGFL("Applying action: Player %d exchanges %d letters:", ps.ID % action.letters.size() % formatLetters(action.letters));
+	LOGFL("Applying action: Player %d exchanges %d letters: %s", ps.ID % action.letters.size() % formatLetters(action.letters));
 	LOGFL("\tPlayer letters before exchange: %s", formatLetters(ps.letters));
 
 	ps.exchanges++;
@@ -474,14 +475,10 @@ void CGameState::print() const
 		cout << "\n";
 	}
 
+	LOGFL("Letters in the main bag: %s", formatLetters(letters));
 	LOGL("Players in game:");
 	FOREACH(const auto &ps, players)
-	{
-		LOGF("\t%d - %d points, available letters: ", ps.ID % ps.points);
-		FOREACH(char c, ps.letters)
-			LOG(c);
-		LOG("\n");
-	}
+		LOGFL("\t%d - %d points, available letters: %s", ps.ID % ps.points % formatLetters(ps.letters));
 
 	LOGFL("\nCurrent player: %d", activePlayer);
 }

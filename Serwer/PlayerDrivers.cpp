@@ -141,6 +141,12 @@ TAction CppDummyPlayer::takeAction(const CBoard &b, const CPlayerState &ps, cons
 
 			return ret;
 		}
+		else if(ps.exchanges < EXCHANGES_ALLOWED)
+		{
+			ExchangeLetters el;
+			el.letters = ps.letters;
+			return el;
+		}
 	}
 
 	return SkipTurn();
