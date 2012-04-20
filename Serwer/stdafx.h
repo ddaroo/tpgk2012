@@ -15,6 +15,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -47,6 +48,10 @@ using std::make_shared;
 using boost::lexical_cast;
 using boost::str;
 using boost::format;
+
+using namespace std;
+using namespace boost::range;
+
 
 const string NAME = "Scrabble Server v1";
 
@@ -102,6 +107,7 @@ typedef std::int8_t si8; //signed int 8 bits (1 byte)
 	{ \
 		LOGL("Unknown exception!"); \
 	} 
+
 
 namespace vstd
 {
@@ -186,10 +192,7 @@ namespace vstd
 		ptr = NULL;
 	}
 }
-
 using namespace vstd;
-using namespace std;
-using namespace boost::range;
 
 
 #include "StopWatch.h"
@@ -203,7 +206,6 @@ const int EXCHANGES_ALLOWED = 3; //trzy razy na gre mozna wymieniac litery
 
 typedef char CLetter;
 const CLetter BLANK = '_';
-
 inline string formatLetters(const vector<CLetter> &letters)
 {
 	ostringstream out;
