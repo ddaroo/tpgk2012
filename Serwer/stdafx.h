@@ -103,7 +103,6 @@ typedef std::int8_t si8; //signed int 8 bits (1 byte)
 		LOGL("Unknown exception!"); \
 	} 
 
-
 namespace vstd
 {
 	//returns true if container c contains item i
@@ -204,3 +203,20 @@ const int EXCHANGES_ALLOWED = 3; //trzy razy na gre mozna wymieniac litery
 
 typedef char CLetter;
 const CLetter BLANK = '_';
+
+inline string formatLetters(const vector<CLetter> &letters)
+{
+	ostringstream out;
+	if(letters.empty())
+	{
+		out << "No letters";
+	}
+	else
+	{
+		for(int i = 0; i < (int)letters.size() - 1;i++)
+			out << letters[i] << ",";
+
+		out << letters.back();
+	}
+	return out.str();
+}
