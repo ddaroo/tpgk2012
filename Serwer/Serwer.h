@@ -92,7 +92,7 @@ struct CGameState : boost::noncopyable
 	void startGame();
 	int nextMove(); //przygotowuje stan do ruchu nastepnego gracza, zwraca ID tego, kogo nalezy zapytac o ruch
 	void applyAction(const TAction &action);
-	void drawLetters(CPlayerState &ps, unsigned howMany);
+	void drawLetters(CPlayerState &ps, unsigned toWhatCount = LETTERS_RECEIVED_AT_START);
 
 	void applyAction(const PutLetters &action);
 	void applyAction(const SkipTurn &action);

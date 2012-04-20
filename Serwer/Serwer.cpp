@@ -244,7 +244,7 @@ void CGameState::startGame()
 	//losujemy poczatkowe litery dla graczy
 	random_shuffle(letters);
 	FOREACH(auto &ps, players)
-		drawLetters(ps, LETTERS_RECEIVED_AT_START);
+		drawLetters(ps);
 }
 
 void moveLettersFromBegin(vector<CLetter> &src, unsigned count, vector<CLetter> &out)
@@ -254,8 +254,10 @@ void moveLettersFromBegin(vector<CLetter> &src, unsigned count, vector<CLetter> 
 	src.erase(src.begin(), src.begin() + count);
 }
 
-void CGameState::drawLetters(CPlayerState &ps, unsigned howMany)
+void CGameState::drawLetters(CPlayerState &ps, unsigned toWhatCount)
 {
+	assert(toWhatCount > ps.letters.size()); //nie mozna wolac metody, gdy gracz ma za duzo liter (bo sie unsigned przekreci)
+	unsigned howMany = toWhatCount - ps.letters.size();
 	amin(howMany, letters.size());
 	if(howMany)
 		moveLettersFromBegin(letters, howMany, ps.letters);
@@ -327,6 +329,7 @@ struct ActionApplier : boost::static_visitor<>
 			//TODO - obsluzyc jakos lagodniej, niz wywalac program
 			throw runtime_error("Illegal action attempted!");
 		}
+		LOGL("Action has been correctly validated.");
 		gs.applyAction(pl);
 	}
 };
@@ -418,7 +421,7 @@ void CGameState::applyAction(const PutLetters &action)
 	 }
 
 	//dobierz liter, zeby miec tyle, ile na starcie
-	drawLetters(ps, LETTERS_RECEIVED_AT_START - ps.letters.size());
+	drawLetters(ps);
 	ps.turnsSkipped = 0;
 }
 
@@ -430,8 +433,22 @@ void CGameState::applyAction(const SkipTurn &action)
 
 void CGameState::applyAction(const ExchangeLetters &action)
 {
-	throw std::runtime_error("Not implemented!"); //TODO
 	CPlayerState &ps = players[activePlayer];
+	LOGFL("Applying action: Player %d exchanges %d letters: %s", ps.ID % action.letters.size() % formatLetters(action.letters));
+	LOGFL("\tPlayer letters before exchange: %s", formatLetters(ps.letters));
+
+	ps.exchanges++;
+	FOREACH(auto c, action.letters)
+	{
+		ps.letters -= c;
+		letters.push_back(c);
+	}
+
+	random_shuffle(letters);
+	drawLetters(ps);
+
+	LOGFL("\tPlayer letters after exchange: %s", formatLetters(ps.letters));
+	LOGFL("\tCount of exchanges done: %d", ps.exchanges);
 }
 
 void CGameState::print() const
@@ -458,14 +475,10 @@ void CGameState::print() const
 		cout << "\n";
 	}
 
+	LOGFL("Letters in the main bag: %s", formatLetters(letters));
 	LOGL("Players in game:");
 	FOREACH(const auto &ps, players)
-	{
-		LOGF("\t%d - %d points, available letters: ", ps.ID % ps.points);
-		FOREACH(char c, ps.letters)
-			LOG(c);
-		LOG("\n");
-	}
+		LOGFL("\t%d - %d points, available letters: %s", ps.ID % ps.points % formatLetters(ps.letters));
 
 	LOGFL("\nCurrent player: %d", activePlayer);
 }
@@ -588,6 +601,14 @@ bool CGameState::validateAction(const SkipTurn &action, const CPlayerState &ps) 
 
 bool CGameState::validateAction(const ExchangeLetters &action, const CPlayerState &ps) const
 {
+	LOGFL("Player %d decided to exchange %d letters: %s", ps.ID % action.letters.size() % formatLetters(action.letters));
+
+	if(action.letters.empty())
+	{
+		LOGL("Player needs to specify at least one letter that'll be exchanged!");
+		return false;
+	}
+
 	if(ps.exchanges >= EXCHANGES_ALLOWED)
 	{
 		LOGL("Player already used all his exchanges!");

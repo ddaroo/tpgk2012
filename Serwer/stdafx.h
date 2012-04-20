@@ -15,6 +15,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -47,6 +48,10 @@ using std::make_shared;
 using boost::lexical_cast;
 using boost::str;
 using boost::format;
+
+using namespace std;
+using namespace boost::range;
+
 
 const string NAME = "Scrabble Server v1";
 
@@ -187,10 +192,7 @@ namespace vstd
 		ptr = NULL;
 	}
 }
-
 using namespace vstd;
-using namespace std;
-using namespace boost::range;
 
 
 #include "StopWatch.h"
@@ -204,3 +206,19 @@ const int EXCHANGES_ALLOWED = 3; //trzy razy na gre mozna wymieniac litery
 
 typedef char CLetter;
 const CLetter BLANK = '_';
+inline string formatLetters(const vector<CLetter> &letters)
+{
+	ostringstream out;
+	if(letters.empty())
+	{
+		out << "No letters";
+	}
+	else
+	{
+		for(int i = 0; i < (int)letters.size() - 1;i++)
+			out << letters[i] << ",";
+
+		out << letters.back();
+	}
+	return out.str();
+}

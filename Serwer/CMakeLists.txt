@@ -12,6 +12,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wclobbered -Wempty-body -Wignored-qualifiers -Wmissing-field-initializers -Wsign-compare -Wtype-limits -Wuninitialized")
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra -Wno-logical-op-parentheses")
+endif()
+
 set(TPServer_SRCS 
     main.cpp
     Dictionary.cpp
