@@ -55,7 +55,7 @@ public class SApp {
 	 */
 	public static void main(String[] args) {
 		if(args.length == 0) {
-			SApp.mlog.log(Level.INFO, "It's working!");
+			SApp.mlog.log(Level.INFO, "Usage: program <port>");
 			System.exit(ExitStat.ALL_OK.ordinal());
 		}
 		

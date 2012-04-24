@@ -6,12 +6,18 @@
 
 CSerwer::CSerwer(void)
 {
-	FOREACH(auto &ps, gs.players)
+	bool java = true;
+        FOREACH(auto &ps, gs.players)
 	{
 		//TODO tutaj bedziemy tworzyc graczy socketowych, na razie dummy w c++
-
-		playerDrivers[ps.ID] = new CppDummyPlayer();
-		playerDrivers[ps.ID]->init();
+		if(java) {
+		    playerDrivers[ps.ID] = new JavaPlayer("ScrabPlayer.jar");
+		    playerDrivers[ps.ID]->init();
+		    java = false;
+		} else {
+		    playerDrivers[ps.ID] = new CppDummyPlayer();
+		    playerDrivers[ps.ID]->init();
+		}	
 	}
 }
 

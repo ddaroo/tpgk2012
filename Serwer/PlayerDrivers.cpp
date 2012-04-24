@@ -162,9 +162,9 @@ JavaPlayer::JavaPlayer(string programName)
 {
 	unsigned short portNumber = 30750;
 
-	string startingCommand = str(format("java -jar %s") % programName);
-	LOGFL("The player program will be called by a command \"%d\"", startingCommand);
-	systemCallThread = make_unique<boost::thread>([=] { system(programName.c_str()); }); //odpalamy wywolanie systemowe na nowym watku
+	string startingCommand = str(format("java -jar %s %d") % programName % portNumber);
+	LOGFL("The player program will be called by a command \"%s\"", startingCommand);
+	systemCallThread = make_unique<boost::thread>([=] { system(startingCommand.c_str()); }); //odpalamy wywolanie systemowe na nowym watku
 
 	try
 	{		
@@ -174,9 +174,10 @@ JavaPlayer::JavaPlayer(string programName)
 		acceptor.accept(socket); //przyjecie polaczenia do socketu
 		LOGFL("TCP connection at port %d has been successfully established!", portNumber);
 		
-		int written = write(socket, boost::asio::buffer("Hello!"));
-
-
+		const char * welcome = "Hello!";
+		int wsize = strlen(welcome);
+		int written = write(socket, boost::asio::buffer(&wsize, 1));
+		written = write(socket, boost::asio::buffer("Hello!"));
 	} CATCH_LOG
 
 }
