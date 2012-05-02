@@ -5,28 +5,34 @@ import java.util.ArrayList;
 
 /**
  * Plansza do gry Scrabble.
- *
  */
-public class SBoard implements Serializable {
-	/**
-	 * Lista płytek na planszy.
-	 */
-	ArrayList<ArrayList<STile>> mb;
+public class SBoard {
 	// TODO implementation
 	public SBoard() {}
+	
+	/**
+	 * @return Płytki na planszy
+	 */
+	public ArrayList<ArrayList<STile>> tiles() {
+		return mb;
+	}
 
-	private void readObject(ObjectInputStream sin) throws IOException,
-			ClassNotFoundException {
-		int n = sin.readInt();
-		int m = sin.readInt();
+	public void readData(DataInputStream din) throws IOException {
+		short n = din.readShort();
+		short m = din.readShort();
 		mb = new ArrayList<ArrayList<STile>>();
 		ArrayList<STile> alt;
-		for(int i = 0; i < n; ++i) {
+		STile tile;
+		for(short i = 0; i < n; ++i) {
 			alt = new ArrayList<STile>();
-			for (int j = 0; j < m; j++) {
-				alt.add((STile) sin.readObject());
+			for (short j = 0; j < m; j++) {
+				tile = new STile();
+				tile.readData(din);
+				alt.add(tile);
 			}
 			mb.add(alt);
 		}
 	}
+
+	private ArrayList<ArrayList<STile>> mb;
 }

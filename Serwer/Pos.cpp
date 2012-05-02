@@ -61,6 +61,14 @@ string Pos::toString() const
 	return ret;
 }
 
+void Pos::writeData(boost::asio::ip::tcp::socket& sock) const
+{
+	uint16_t temp = htons(x);
+	write(sock, boost::asio::buffer(&temp, 2));
+	temp = htons(y);
+	write(sock, boost::asio::buffer(&temp, 2));
+}
+
 bool Pos::operator!=(const Pos &rhs) const
 {
 	return x != rhs.x || y != rhs.y;

@@ -1,6 +1,5 @@
 #pragma once
 
-
 struct Pos
 {
 	int x, y;
@@ -19,6 +18,7 @@ struct Pos
 	vector<Pos> validNeighbors() const;
 
 	string toString() const;
+	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
 
 

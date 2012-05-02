@@ -10,16 +10,19 @@ struct IPlayerDriver
 {
 	int playerID;
 
-	virtual void init() = 0;
-	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps, const CRules &r) = 0;
+	virtual void init(const CRules &r) = 0;
+	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps) = 0;
+	virtual void gameFinished() = 0;
 	virtual ~IPlayerDriver(){}
 
 };
 
 struct CppDummyPlayer : IPlayerDriver
 {
-	void init();
-	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps, const CRules &r) override;
+	virtual void init(const CRules &rul);
+	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps) override;
+	virtual void gameFinished() override;
+	const CRules* rules;
 };
 
 struct JavaPlayer : IPlayerDriver
@@ -36,7 +39,8 @@ struct JavaPlayer : IPlayerDriver
 	TSocket socket;
 
 	JavaPlayer(string programName);
-	void init();
-	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps, const CRules &r) override;
-	~JavaPlayer();
+	virtual void init(const CRules& r);
+	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps) override;
+	virtual void gameFinished() override;
+	virtual ~JavaPlayer();
 };

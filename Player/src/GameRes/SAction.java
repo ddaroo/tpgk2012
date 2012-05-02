@@ -2,10 +2,10 @@ package GameRes;
 
 import java.io.*;
 
-public class SAction implements Serializable {
+public class SAction {
 	public SAction() {}
 	
-	private void writeObject(ObjectOutputStream sout) throws IOException {
-		// TODO implementation
+	public void writeData(DataOutputStream dout) throws IOException {
+		dout.writeByte(1);
 	}
 }

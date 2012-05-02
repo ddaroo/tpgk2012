@@ -3,8 +3,9 @@
 #include "Serwer.h"
 #include "Dictionary.h"
 
-TAction CppDummyPlayer::takeAction(const CBoard &b, const CPlayerState &ps, const CRules &r)
+TAction CppDummyPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 {
+	CRules r = *rules;
 	auto printLetters = [](vector<char> &l, int c)
 	{
 		std::cout << "[ " << l[0];
@@ -152,12 +153,17 @@ TAction CppDummyPlayer::takeAction(const CBoard &b, const CPlayerState &ps, cons
 	return SkipTurn();
 }
 
-void CppDummyPlayer::init()
+void CppDummyPlayer::gameFinished()
 {
-
+	// do nothing
 }
 
-JavaPlayer::JavaPlayer(string programName)
+void CppDummyPlayer::init(const CRules& rul)
+{
+    rules = &rul;
+}
+
+JavaPlayer::JavaPlayer(string programName) // TODO programName is unused
 	: socket(io)
 {
 	unsigned short portNumber = 30750;
@@ -174,24 +180,49 @@ JavaPlayer::JavaPlayer(string programName)
 		acceptor.accept(socket); //przyjecie polaczenia do socketu
 		LOGFL("TCP connection at port %d has been successfully established!", portNumber);
 		
-		const char * welcome = "Hello there!";
-		int wsize = strlen(welcome);
-		int written = write(socket, boost::asio::buffer(&wsize, 1));
-		written = write(socket, boost::asio::buffer(welcome, wsize));
+		const char * welcome = "Polaczono z serwerem scrable!";
+		int strSize = strlen(welcome);
+		uint16_t wsize = htons(strSize);
+		int written = write(socket, boost::asio::buffer(&wsize, 2));
+		written = write(socket, boost::asio::buffer(welcome, strSize));
 	} CATCH_LOG
 
 }
 
-TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps, const CRules &r)
+TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 {
-	//TODO wyszarpac z socketu potrzebne dane
-
-	return SkipTurn(); //lub inna, bardziej stosowna akcja
+	try {
+		// write all data neccessary to take action
+		char temp = 0;
+		write(socket, boost::asio::buffer(&temp, 1)); // 0 - game is not finished yet
+		b.writeData(socket);
+		ps.writeData(socket);
+		
+		// read acton perfomed by the player
+		read(socket, boost::asio::buffer(&temp, 1));
+		switch(temp)
+		{
+		    case 1: // TODO implementation
+			return SkipTurn();
+			break;
+		    default:
+			return SkipTurn();			
+		}
+	} CATCH_LOG
 }
 
-void JavaPlayer::init()
+void JavaPlayer::gameFinished()
 {
-	//TODO przekazac do socketu niezmienniki
+	char temp = 1;
+	write(socket, boost::asio::buffer(&temp, 1)); // 1 - game is finished
+	socket.close();
+}
+
+void JavaPlayer::init(const CRules &r)
+{
+	try {
+		r.writeData(socket);
+	} CATCH_LOG
 }
 
 JavaPlayer::~JavaPlayer()

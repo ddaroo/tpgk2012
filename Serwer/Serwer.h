@@ -12,7 +12,7 @@ struct CTile
 
 	struct Bonus
 	{
-		enum EBonusType {NONE, LETTER, WORD} multiplicatorType; //czy mnoznik jest do litery czy do calego slowa
+		enum EBonusType {NONE = 0, LETTER, WORD} multiplicatorType; //czy mnoznik jest do litery czy do calego slowa
 		int multiplicatorValue; //ilokrotny mnoznik
 
 		Bonus(EBonusType type = NONE, int value = 0)
@@ -26,6 +26,8 @@ struct CTile
 	{
 		letterGeneratedFromBlank = false;
 	}
+	
+	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
 
 //plansza
@@ -49,6 +51,7 @@ struct CBoard : boost::noncopyable
 	//algorithms
 	void foreachPos(function<void(Pos)> func) const; //calls func with every valid (x,y)
 	void foreachTile(function<void(const CTile &)> func) const; //calls func with every valid tile -> will go in rows from top
+	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
 
 struct CPlayerState
@@ -66,6 +69,7 @@ struct CPlayerState
 		ID = _ID;
 		points = 0;
 	}
+	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
 
 
@@ -75,6 +79,7 @@ struct CRules
 
 	int letterValue(char c) const;
 	int wordBasicValue(crstring word) const;
+	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
 
 struct CGameState : boost::noncopyable

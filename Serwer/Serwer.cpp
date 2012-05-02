@@ -12,11 +12,11 @@ CSerwer::CSerwer(void)
 		//TODO tutaj bedziemy tworzyc graczy socketowych, na razie dummy w c++
 		if(java) {
 		    playerDrivers[ps.ID] = new JavaPlayer("ScrabPlayer.jar");
-		    playerDrivers[ps.ID]->init();
+		    playerDrivers[ps.ID]->init(gs.rules);
 		    java = false;
 		} else {
 		    playerDrivers[ps.ID] = new CppDummyPlayer();
-		    playerDrivers[ps.ID]->init();
+		    playerDrivers[ps.ID]->init(gs.rules);
 		}	
 	}
 }
@@ -33,10 +33,16 @@ void CSerwer::run()
 		TAction action;
 		{
 			CHECK_TIME_FORMAT("Player %d was thinking", playerToMove);
-			action = playerDrivers[playerToMove]->takeAction(gs.board, gs.players[playerToMove], gs.rules);
+			action = playerDrivers[playerToMove]->takeAction(gs.board, gs.players[playerToMove]);
 		}
 		gs.applyAction(action);
 	} while(!gs.isGameFinished());
+	
+	map<int, IPlayerDriver*>::iterator it;
+	for(it = playerDrivers.begin(); it != playerDrivers.end(); ++it) 
+	{
+		(*it).second->gameFinished();
+	}
 }
 
 CBoard::CBoard()
@@ -116,11 +122,37 @@ const CTile & CBoard::tile(Pos p) const
 	return tiles[p.x][p.y];
 }
 
+void CTile::writeData(boost::asio::ip::tcp::socket& sock) const
+{
+	pos.writeData(sock);
+	char a = letter.get_value_or('@');
+	uint16_t bonVal = htons(bonus.multiplicatorValue);
+	write(sock, boost::asio::buffer(&a, 1));
+	write(sock, boost::asio::buffer(&bonus.multiplicatorType, 1));
+	write(sock, boost::asio::buffer(&bonVal, 2));
+}
+
 void CBoard::foreachTile(function<void(const CTile &)> func) const
 {
 	for (int j = 0; j < HEIGHT ; j++)
 		for (int i = 0; i < WIDTH ; i++)
 			func(tiles[i][j]);
+}
+
+void CBoard::writeData(boost::asio::ip::tcp::socket& sock) const
+{
+	uint16_t dimension = htons(tiles.size());
+	int written = write(sock, boost::asio::buffer(&dimension, 2));
+	dimension = htons(tiles.front().size());
+	written = write(sock, boost::asio::buffer(&dimension, 2));
+	CTile tile;
+	FOREACH(auto &col, tiles) 
+	{
+		FOREACH(auto &tile, col) 
+		{
+			tile.writeData(sock);
+		}
+	}
 }
 
 vector<string> CBoard::wordsGeneratedbyLetter(char letter, Pos pos) const
@@ -661,6 +693,23 @@ int CGameState::pointsForWord(WordRange word) const
 	return pointsAccumulator.totalPoints();
 }
 
+void CPlayerState::writeData(boost::asio::ip::tcp::socket& sock) const
+{
+	uint16_t temp = htons(exchanges);
+	write(sock, boost::asio::buffer(&temp, 2));
+	temp = htons(turnsSkipped);
+	write(sock, boost::asio::buffer(&temp, 2));
+	temp = htons(ID);
+	write(sock, boost::asio::buffer(&temp, 2));
+	temp = htons(points);
+	write(sock, boost::asio::buffer(&temp, 2));
+	temp = htons(letters.size());
+	write(sock, boost::asio::buffer(&temp, 2));
+	FOREACH(auto &let, letters) {
+	    write(sock, boost::asio::buffer(&let, 1));
+	}
+}
+
 int CRules::letterValue(char c) const
 {
 	auto i = pointsForLetter.find(c);
@@ -678,4 +727,21 @@ int CRules::wordBasicValue(crstring word) const
 		ret += letterValue(c);
 
 	return ret;
+}
+
+void CRules::writeData(boost::asio::ip::tcp::socket& sock) const
+{
+	uint16_t size = htons(pointsForLetter.size());
+	write(sock, boost::asio::buffer(&size, 2));
+	
+	map<char, int>::const_iterator cit;
+	char ch;
+	uint16_t val;
+	for(cit = pointsForLetter.begin(); cit != pointsForLetter.end(); ++cit) 
+	{
+		ch = (*cit).first;
+		val = htons((*cit).second);
+		write(sock, boost::asio::buffer(&ch, 1));
+		write(sock, boost::asio::buffer(&val, 2));
+	}
 }

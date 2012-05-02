@@ -1,25 +1,31 @@
 package GameRes;
 
 import java.io.*;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Dodatkowe informacje o grze.
- *
  */
-public class SRules implements Serializable {
-	/**
-	 * Możliwe literki i skojarzone z nimi punkty.
-	 */
-	Map<Character, Integer> mletBonus;
+public class SRules {
+	public SRules() {
+		mletBonus = new HashMap<Character, Short>();
+	}
 	
-	public SRules() {}
+	/**
+	 * @return Możliwe literki i skojarzone z nimi punkty
+	 */
+	public Map<Character, Short> letterBonuses() {
+		return mletBonus;
+	}
 
-	private void readObject(ObjectInputStream sin) throws IOException,
-			ClassNotFoundException {
-		int n = sin.readInt();
-		for(int i = 0; i < n; ++i) {
-			mletBonus.put(sin.readChar(), sin.readInt());
+	public void readData(DataInputStream din) throws IOException {
+		short n = din.readShort();
+		for(short i = 0; i < n; ++i) {
+			char ch = (char) din.readByte();
+			short val = din.readShort();
+			mletBonus.put(ch, val);
 		}
 	}
+	
+	private Map<Character, Short> mletBonus;
 }

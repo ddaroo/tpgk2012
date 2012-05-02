@@ -3,6 +3,7 @@ package main;
 import java.io.*;
 import java.net.*;
 import java.util.logging.*;
+import Player.*;
 
 public class SApp {	
 	public static Socket msock;
@@ -25,23 +26,15 @@ public class SApp {
 			SApp.mlog.log(Level.INFO, logmsg);
 			SApp.msock.connect(addr); // połącz się z serwerem gry
 			
-			SApp.mout = new DataOutputStream(SApp.msock.getOutputStream());
-			SApp.min = new DataInputStream(SApp.msock.getInputStream());
+			SApp.mout = new DataOutputStream(
+							new BufferedOutputStream(
+									SApp.msock.getOutputStream()));
+			SApp.min = new DataInputStream(
+							new BufferedInputStream(
+									SApp.msock.getInputStream()));
 		} catch (Exception e) {
 			SApp.mlog.log(Level.SEVERE, e.getMessage());
 			System.exit(ExitStat.FAIL_CON.ordinal());
-		}
-		
-		try {
-			// pobierz wiadomość powitalną z serwera
-			int msgLen = SApp.min.readByte();
-			StringBuilder sb = new StringBuilder();
-			for(int i = 0; i < msgLen; ++i) {
-				sb.append((char) SApp.min.readByte());
-			}
-			SApp.mlog.log(Level.INFO, "Wiadomość od serwera: ".concat(sb.toString()));
-		} catch(Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -50,6 +43,7 @@ public class SApp {
 	 */
 	public static void main(String[] args) {
 		try {
+			// logowanie komunikatów do pliku
 			FileHandler fh = new FileHandler("ScrabPlayer.log");
 			fh.setFormatter(new SimpleFormatter());
 			mlog.addHandler(fh);
@@ -63,7 +57,18 @@ public class SApp {
 			System.exit(ExitStat.ALL_OK.ordinal());
 		}
 		
-		SApp.initConnection(args[0]);
-		// TODO implementation
+		SApp.initConnection(args[0]); // inicjuj połączenie z serwerem gry
+		
+		try {
+			// pobierz wiadomość powitalną z serwera
+			SMsg msg = new SMsg();
+			msg.readData(SApp.min);
+			SApp.mlog.log(Level.INFO, "Wiadomość od serwera: ".concat(msg.content()));
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		SPlayer player = new SPlayer(min, mout);
+		player.playGame(); // główna pętla programu
 	}
 }

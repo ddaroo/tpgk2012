@@ -5,42 +5,54 @@ import java.util.ArrayList;
 
 /**
  * Informacje o stanie gry oraz dostępnych zasobach dla gracza.
- * 
  */
-public class SPlayerState implements Serializable {
-	/**
-	 * Ile dokonano wymian liter.
-	 */
-	public int mexchanges;
-	/**
-	 * Liczba opuszczonych kolejek.
-	 */
-	public int mturnsSkipped;
-	/**
-	 * Unikalny identyfikator gracza.
-	 */
-	public int mID;
-	/**
-	 * Liczba zdobytych punktów.
-	 */
-	public int mpoints;
-	/**
-	 * Stojak z literkami gracza.
-	 */
-	ArrayList<Character> mletters;
-	
+public class SPlayerState {
 	public SPlayerState() {}
+	
+	/**
+	 * @return Ile dokonano wymian liter
+	 */
+	public int exchanges() {
+		return mexchanges;
+	}
+	
+	/**
+	 * @return Liczba opuszczonych kolejek
+	 */
+	public int turnsSkipped() {
+		return mturnsSkipped;
+	}
+	
+	/**
+	 * @return Liczba zdobytych punktów
+	 */
+	public int points() {
+		return mpoints;
+	}
+	
+	/**
+	 * @return Aktualnie trzymane litery 
+	 */
+	public ArrayList<Character> letters() {
+		return mletters;
+	}
 
-	private void readObject(ObjectInputStream sin) throws IOException,
-			ClassNotFoundException {
-		mexchanges = sin.readInt();
-		mturnsSkipped = sin.readInt();
-		mID = sin.readInt();
-		mpoints = sin.readInt();
-		int n = sin.readInt();
+	public void readData(DataInputStream din) throws IOException {
+		mexchanges = din.readShort();
+		mturnsSkipped = din.readShort();
+		mID = din.readShort();
+		mpoints = din.readShort();
+		short n = din.readShort();
 		mletters = new ArrayList<Character>();
-		for (int i = 0; i < n; ++i) {
-			mletters.add(sin.readChar());
+		for (short i = 0; i < n; ++i) {
+			mletters.add((char) din.readByte());
 		}
 	}
+
+	private short mexchanges;
+	private short mturnsSkipped;
+	 // Unikalny identyfikator gracza.
+	private short mID;
+	private short mpoints;
+	private ArrayList<Character> mletters;
 }
