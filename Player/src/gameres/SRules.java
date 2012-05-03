@@ -1,4 +1,4 @@
-package GameRes;
+package gameres;
 
 import java.io.*;
 import java.util.*;

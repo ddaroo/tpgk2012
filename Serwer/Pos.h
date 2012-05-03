@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 
 struct Pos
 {
@@ -18,6 +19,7 @@ struct Pos
 	vector<Pos> validNeighbors() const;
 
 	string toString() const;
+	void readData(boost::asio::ip::tcp::socket& sock);
 	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
 

@@ -3,15 +3,20 @@ package main;
 import java.io.*;
 import java.net.*;
 import java.util.logging.*;
-import Player.*;
 
+import player.*;
+
+/**
+ * Inicjalizacja aplikacji
+ */
 public class SApp {	
 	public static Socket msock;
 	public static DataOutputStream mout;
 	public static DataInputStream min;
 	public static Logger mlog = Logger.getLogger("Slog");
+	public static BufferedReader mdict;
 	
-	public enum ExitStat { ALL_OK, FAIL_CON };
+	public enum ExitStat { ALL_OK, FAIL_CON, NO_DICT };
 	
 	public static void initConnection(String port) {
 		try {
@@ -39,7 +44,7 @@ public class SApp {
 	}
 
 	/**
-	 * @param args
+	 * @param args Argumenty z linii komend programu
 	 */
 	public static void main(String[] args) {
 		try {
@@ -53,8 +58,16 @@ public class SApp {
 		}
 		
 		if(args.length == 0) {
-			SApp.mlog.log(Level.INFO, "Usage: program <port>");
+			SApp.mlog.log(Level.INFO, "Sposób użycia: program <port>");
 			System.exit(ExitStat.ALL_OK.ordinal());
+		}
+		
+		// sprawdź czy słownik o nazwie "dict.txt" jest obecny w katalogu programu
+		try {
+			mdict = new BufferedReader(new FileReader("dict.txt"));
+		} catch(IOException e) {
+			SApp.mlog.log(Level.SEVERE, e.getMessage());
+			System.exit(ExitStat.NO_DICT.ordinal());
 		}
 		
 		SApp.initConnection(args[0]); // inicjuj połączenie z serwerem gry
@@ -69,6 +82,6 @@ public class SApp {
 		}
 		
 		SPlayer player = new SPlayer(min, mout);
-		player.playGame(); // główna pętla programu
+		player.playGame(mdict); // główna pętla programu
 	}
 }

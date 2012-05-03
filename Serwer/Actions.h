@@ -1,10 +1,13 @@
 #pragma once
 
 #include "Pos.h"
+#include "stdafx.h"
 
 struct ExchangeLetters
 {
 	vector<CLetter> letters;
+	
+	void readData(boost::asio::ip::tcp::socket& sock);
 };
 
 struct PutLetters
@@ -29,6 +32,8 @@ struct PutLetters
 	{
 		orientation = INVALID;
 	}
+	
+	void readData(boost::asio::ip::tcp::socket& sock);
 };
 
 struct SkipTurn

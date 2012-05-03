@@ -191,6 +191,9 @@ JavaPlayer::JavaPlayer(string programName) // TODO programName is unused
 
 TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 {
+	TAction act;
+	ExchangeLetters ex;
+	PutLetters put;
 	try {
 		// write all data neccessary to take action
 		char temp = 0;
@@ -200,15 +203,28 @@ TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 		
 		// read acton perfomed by the player
 		read(socket, boost::asio::buffer(&temp, 1));
+		char size;
+		
 		switch(temp)
 		{
-		    case 1: // TODO implementation
-			return SkipTurn();
+		    case 0:
+			ex.readData(socket);
+			act = ex;
+			break;
+		    case 1:
+			put.readData(socket);
+			act = put;
+			break;
+			
+		    case 2:
+			act = SkipTurn();
 			break;
 		    default:
-			return SkipTurn();			
+			LOGL("Connection problems with Java player"); // cos sie rozjechalo :(
 		}
 	} CATCH_LOG
+	
+	return act;
 }
 
 void JavaPlayer::gameFinished()

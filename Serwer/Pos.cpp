@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Pos.h"
 
 Pos::Pos()
@@ -59,6 +58,15 @@ string Pos::toString() const
 	ret[0] = intToChar(x);
 	ret[1] = intToChar(y);
 	return ret;
+}
+
+void Pos::readData(boost::asio::ip::tcp::socket& sock) 
+{
+	uint16_t temp;
+	read(sock, boost::asio::buffer(&temp, 2));
+	x = ntohs(temp);
+	write(sock, boost::asio::buffer(&temp, 2));
+	y = ntohs(temp);
 }
 
 void Pos::writeData(boost::asio::ip::tcp::socket& sock) const

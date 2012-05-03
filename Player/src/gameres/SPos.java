@@ -1,4 +1,4 @@
-package GameRes;
+package gameres;
 
 import java.io.*;
 
@@ -22,6 +22,11 @@ public class SPos {
 	
 	public void setY(short y) {
 		my = y;
+	}
+	
+	public void writeData(DataOutputStream dout) throws IOException {
+		dout.writeShort(mx);
+		dout.writeShort(my);
 	}
 
 	public void readData(DataInputStream din) throws IOException {
