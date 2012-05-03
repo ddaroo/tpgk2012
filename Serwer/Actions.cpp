@@ -17,11 +17,12 @@ void PutLetters::readData(boost::asio::ip::tcp::socket& sock)
 	read(sock, boost::asio::buffer(&temp, 1));
 	orientation = static_cast<EOrientation>(temp);
 	read(sock, boost::asio::buffer(&size, 1));
-	PutLetter plet;
 	for(int i = 0; i < size; ++i)
 	{
+		PutLetter plet;
 		read(sock, boost::asio::buffer(&plet.letter, 1));
 		read(sock, boost::asio::buffer(&plet.generateFromBlank, 1));
 		plet.pos.readData(sock);
+		letters.push_back(plet);
 	}
 }

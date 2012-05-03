@@ -12,6 +12,8 @@ public class SRules {
 	}
 	
 	/**
+	 * Niektóre literki są wyżej punktowane.
+	 * 
 	 * @return Możliwe literki i skojarzone z nimi punkty
 	 */
 	public Map<Character, Short> letterBonuses() {

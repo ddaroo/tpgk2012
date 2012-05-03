@@ -6,7 +6,14 @@ import java.io.*;
  * Pozycja płytki na planszy.
  */
 public class SPos {
-	public SPos() {}
+	public SPos() {
+		mx = -1;
+		my = -1;
+	}
+	
+	public SPos(short x, short y) {
+		setCoords(x, y);
+	}
 	
 	public short x() {
 		return mx;
@@ -14,6 +21,11 @@ public class SPos {
 	
 	public short y() {
 		return my;
+	}
+	
+	public void setCoords(short x, short y) {
+		mx = x;
+		my = y;
 	}
 	
 	public void setX(short x) {

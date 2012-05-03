@@ -13,26 +13,23 @@ public class SBoard {
 	/**
 	 * @return Płytki na planszy
 	 */
-	public ArrayList<ArrayList<STile>> tiles() {
+	public STile[][] tiles() {
 		return mb;
 	}
 
 	public void readData(DataInputStream din) throws IOException {
 		short n = din.readShort();
 		short m = din.readShort();
-		mb = new ArrayList<ArrayList<STile>>();
-		ArrayList<STile> alt;
+		mb = new STile[n][m];
 		STile tile;
 		for(short i = 0; i < n; ++i) {
-			alt = new ArrayList<STile>();
 			for (short j = 0; j < m; j++) {
 				tile = new STile();
 				tile.readData(din);
-				alt.add(tile);
+				mb[i][j] = tile;
 			}
-			mb.add(alt);
 		}
 	}
 
-	private ArrayList<ArrayList<STile>> mb;
+	private STile[][] mb;
 }

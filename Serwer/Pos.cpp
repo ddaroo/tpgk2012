@@ -65,7 +65,7 @@ void Pos::readData(boost::asio::ip::tcp::socket& sock)
 	uint16_t temp;
 	read(sock, boost::asio::buffer(&temp, 2));
 	x = ntohs(temp);
-	write(sock, boost::asio::buffer(&temp, 2));
+	read(sock, boost::asio::buffer(&temp, 2));
 	y = ntohs(temp);
 }
 

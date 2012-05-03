@@ -209,16 +209,12 @@ TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 		{
 		    case 0:
 			ex.readData(socket);
-			act = ex;
-			break;
+			return ex;
 		    case 1:
 			put.readData(socket);
-			act = put;
-			break;
-			
+			return put;
 		    case 2:
-			act = SkipTurn();
-			break;
+			return SkipTurn();
 		    default:
 			LOGL("Connection problems with Java player"); // cos sie rozjechalo :(
 		}

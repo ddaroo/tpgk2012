@@ -11,13 +11,26 @@ public class SActionPut extends SAction {
 	 */
 	public enum Orien {HOR, VER};
 	
-	public class PutLetter {
-		char let;
-		SPos pos;
-		boolean fromBlank;
+	/**
+	 * Klasa pomocnicza na potrzeby wysłania wymaganych informacji do serwera
+	 */
+	public static class PutLetter {
+		public char let;
+		public SPos pos;
+		public boolean fromBlank;
+		
+		public PutLetter() {
+			let = '@';
+			fromBlank = false;
+			pos = new SPos();
+		}
 	}
 	
 	public SActionPut(SActionPut.PutLetter[] lets, SActionPut.Orien orien) {
+		setWord(lets, orien);
+	}
+	
+	public void setWord(SActionPut.PutLetter[] lets, SActionPut.Orien orien) {
 		mlets = lets;
 		morien = orien;
 	}

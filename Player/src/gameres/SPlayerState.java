@@ -7,6 +7,8 @@ import java.util.ArrayList;
  * Informacje o stanie gry oraz dostępnych zasobach dla gracza.
  */
 public class SPlayerState {
+	public static final int MAX_EXCHANGES = 3;
+	
 	public SPlayerState() {}
 	
 	/**
