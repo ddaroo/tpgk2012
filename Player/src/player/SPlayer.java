@@ -42,9 +42,13 @@ public class SPlayer {
 	 * @param rul Aktywne reguły dla tej rozgrywki.
 	 */
 	public void simpleInit(SRules rul, BufferedReader dict) throws IOException {
-		int size = 400000;
+		int size = 200000;
 		mwords = new String[size];
 		for (int i = 0; i < size; ++i) {
+			// dla większego zróżnicowania wczytujemy co dziesiąte słowo
+			for(int j = 0; j < 10; ++j) {
+				dict.readLine();
+			}
 			mwords[i] = dict.readLine();
 		}
 	}
@@ -109,7 +113,7 @@ public class SPlayer {
 	/**
 	 * Naiwna implementacja logiki gracza.
 	 * 
-	 * @param board Aktualna tablica gry.
+	 * @param board Aktualna plansza gry.
 	 * @param ps Aktualny stan gracza.
 	 * @return Ruch wykonany przez gracza.
 	 */
@@ -117,9 +121,7 @@ public class SPlayer {
 		// sprawdzamy czy z literek, ktore mamy, można ułożyc jakieś słowo, 
 		// ktore znamy ze słownika
 		String word = new String();
-		boolean allLetters = false;
 		
-		out_loop:
 		for(int i = 0; i < mwords.length; ++i)
 		{
 			ArrayList<Character> lets = new ArrayList<Character>(ps.letters());
@@ -132,8 +134,12 @@ public class SPlayer {
 					lets.remove(index);
 					if(j == word.length() - 1) {
 						// skompletowaliśmy literki do wyrazu
-						allLetters = true;
-						break out_loop;
+						SAction act = fitSimplyWord(word, board, ps);
+						if(act instanceof SActionSkip) {
+							continue;
+						} else {
+							return act;
+						}
 					}
 					continue;
 				}
@@ -142,133 +148,132 @@ public class SPlayer {
 				break;
 			}
 		}
-		// pozycja początkowa pierwszej literki na planszy
-		// jeśli uda nam się upchać wyraz gdzieś na planszy
-		int fitX = -1;
-		int fitY = -1;
-		if(allLetters) {
-			// mamy słowo, które teraz spróbujemy gdzieś upchać
-			STile[][] tiles = board.tiles();
-			
-			// jeśli plansza jest pusta to wstawiamy wyraz na jej środek
-			boolean isBoardEmpty = true;
-			out_loop:
-			for(int i = 0; i < tiles.length; ++i) {
-				int rowLength = tiles[i].length;
-				for(int j = 0; j < rowLength; ++j) {
-					if(!tiles[i][j].isEmpty()) {
-						isBoardEmpty = false;
-						break out_loop;
-					}
+		if (ps.exchanges() < SPlayerState.MAX_EXCHANGES) {
+			// spróbuj wymienić kilka literek
+			int howMany = mrand.nextInt(ps.letters().size());
+			if (howMany > 0) {
+				char[] letToEx = new char[howMany];
+				for (int i = 0; i < howMany; ++i) {
+					letToEx[i] = ps.letters().get(i);
 				}
-			}
-			if(isBoardEmpty) {
-				fitY = tiles.length/2;
-				fitX = tiles[fitY].length/2;
-			} else {
-				// dla uproszczenia sprawdzamy tylko pozycje poziome
-				out_loop:
-				for(int i = 0; i < tiles.length; ++i) {
-					int rowLength = tiles[i].length;
-					for(int j = 0; j < rowLength; ++j) {
-						if(rowLength - j - 1 < word.length()) {
-							// wyraz nie zmieści się w aktualnym wierszu
-							// spróbuj z następnym wierszem
-							break;
-						}
-						
-						// słowo musi się przecinać z co najmniej jednym słowem
-						boolean atLeastOne = false; 
-						// sprawdzamy czy pasuje
-						for(int k = 0; k < word.length(); ++k) {
-							boolean sameLetter = tiles[i][j + k].letter() == word.charAt(k);
-							if(sameLetter) {
-								atLeastOne = true;
-							}
-							if(tiles[i][j + k].isEmpty() || sameLetter) {
-								if(k == word.length() - 1 && atLeastOne) {
-									// jeśli ostatnia literka w wyrazie to znaczy
-									// że udało nam się upchać wyraz na planszy
-									fitX = j; 
-									fitY = i;
-									break out_loop;
-								}
-								continue;
-							}
-						}
-					}
-				}
-			}
-			
-			if(fitX > 0 && fitY > 0 && !isBoardEmpty) {
-				// Sprawdzamy czy mamy jakieś sąsiedztwo w otoczeniu słowa.
-				// W scruble wszystkie wyrazy na planszy muszą być
-				// prawidłowymi słowami.
-				for(int i = 0; i < word.length(); ++i) {
-					// jeśli we wcześniejszym wierszu znajdują się w poziomie 
-					// dwie literki pod rząd to porzuć obecne rozwiązanie
-					boolean prevNotEmpty = fitY-1 > 0 && !tiles[fitY-1][fitX + i].isEmpty();
-					boolean nextNotEmpty = fitY-1 > 0 && i + 1 < word.length() && !tiles[fitY-1][fitX+i+1].isEmpty();
-					if(prevNotEmpty && nextNotEmpty) {
-						fitX = -1;
-						fitY = -1;
-						break;
-					}
-					// jeśli w kolejnym wierszu znajdują się w poziomie 
-					// dwie literki pod rząd to porzuć obecne rozwiązanie
-					prevNotEmpty = fitY+1 < tiles.length && !tiles[fitY+1][fitX + i].isEmpty();
-					nextNotEmpty = fitY+1 < tiles.length && i + 1 < word.length() && !tiles[fitY+1][fitX+i+1].isEmpty();
-					if(prevNotEmpty && nextNotEmpty) {
-						fitX = -1;
-						fitY = -1;
-						break;
-					}
- 				}
-				if(fitX > 0 && fitY > 0) {
-					// jeśli wcześniej lub później w poziomie znajduje się jakieś słowo
-					// to porzuć rozwiązanie
-					boolean prevNotEmpty = fitX-1 > 0 && !tiles[fitY][fitX-1].isEmpty();
-					boolean nextNotEmpty = fitX+1 < tiles[fitY].length && !tiles[fitY][fitX+1].isEmpty();
-					if(prevNotEmpty || nextNotEmpty) {
-						fitX = -1;
-						fitY = -1;
-					}
-				}
-			}
-			
-			if(fitX > 0 && fitY > 0) {
-				// znaleźliśmy miejsce dla słowa, które składa się z literek
-				// które mamy oraz nie koliduje w poziomie z innymi słowami
-				// konstruujemy odpowiedź do serwera gry
-				SActionPut.PutLetter plet;
-				SActionPut.PutLetter[] plets = new SActionPut.PutLetter[word.length()];
-				for(int i = 0; i < word.length(); ++i) {
-					plet = new SActionPut.PutLetter();
-					plet.let = word.charAt(i);
-					plet.pos = new SPos((short) (fitX + i), (short) fitY);
-					plets[i] = plet;
-				}
-				
-				return new SActionPut(plets, SActionPut.Orien.HOR);
-			} else {
-				return new SActionSkip();
-			}
-		} else {
-			if(ps.exchanges() < SPlayerState.MAX_EXCHANGES) {
-				// spróbuj wymienić kilka literek
-				Random rand = new Random(System.nanoTime());
-				int howMany = rand.nextInt(ps.letters().size());
-				if(howMany > 0) {
-					char[] letToEx = new char[howMany];
-					for(int i = 0; i < howMany; ++i) {
-						letToEx[i] = ps.letters().get(i);
-					}
-					return new SActionEx(letToEx);
-				}
+				return new SActionEx(letToEx);
 			}
 		}
 		
 		return new SActionSkip();
+	}
+	
+	/**
+	 * Próbuje upchać słowo na planszy.
+	 * 
+	 * @param word Słowo do upchania
+	 * @param board Aktualna plansza gry
+	 * @param ps Aktualny stan gracza
+	 * @return Akcja wstawiania słowa na planszę lub opuszczenia kolejki
+	 */
+	private SAction fitSimplyWord(String word, SBoard board, SPlayerState ps) {
+		// pozycja początkowa pierwszej literki wyrazu na planszy
+		// jeśli uda nam się upchać wyraz gdzieś na planszy
+		int fitX = -1;
+		int fitY = -1;
+		// mamy słowo, które teraz spróbujemy gdzieś upchać
+		STile[][] tiles = board.tiles();
+		
+		// jeśli plansza jest pusta to wstawiamy wyraz na jej środek
+		boolean isBoardEmpty = true;
+		out_loop:
+		for(int i = 0; i < tiles.length; ++i) {
+			int rowLength = tiles[i].length;
+			for(int j = 0; j < rowLength; ++j) {
+				if(!tiles[i][j].isEmpty()) {
+					isBoardEmpty = false;
+					break out_loop;
+				}
+			}
+		}
+		if(isBoardEmpty) {
+			fitY = tiles.length/2;
+			fitX = tiles[fitY].length/2;
+		} else {
+			// dla uproszczenia sprawdzamy tylko pozycje poziome
+			out_loop:
+			for(int i = 0; i < tiles.length; ++i) {
+				int rowLength = tiles[i].length;
+				for(int j = 0; j < rowLength; ++j) {
+					if(rowLength - j - 1 < word.length()) {
+						// wyraz nie zmieści się w aktualnym wierszu
+						// spróbuj z następnym wierszem
+						break;
+					}
+					
+					// wyraz musi się przecinać z co najmniej jednym słowem
+					boolean atLeastOne = false; 
+					// sprawdzamy czy pasuje
+					for(int k = 0; k < word.length(); ++k) {
+						boolean sameLetter = tiles[i][j + k].letter() == word.charAt(k);
+						if(sameLetter) {
+							atLeastOne = true;
+						}
+						if(tiles[i][j + k].isEmpty() || sameLetter) {
+							if(k == word.length() - 1 && atLeastOne) {
+								// jeśli ostatnia literka w wyrazie to znaczy
+								// że udało nam się upchać wyraz na planszy
+								fitX = j; 
+								fitY = i;
+								break out_loop;
+							}
+							continue;
+						}
+					}
+				}
+			}
+		}
+		
+		if(fitX > 0 && fitY > 0 && !isBoardEmpty) {
+			// Sprawdzamy czy mamy jakieś sąsiedztwo w otoczeniu słowa.
+			// W scruble wszystkie wyrazy na planszy muszą być
+			// prawidłowymi słowami, dlatego odrzucamy rozwiązania które
+			// tworzą jakieś przypadkowa słowa na planszy
+			for(int i = 0; i < word.length(); ++i) {
+				// jeśli we wcześniejszym lub kolejnym wierszu znajduje się 
+				// jakaś literka w poziomie to porzuć obecne rozwiązanie
+				boolean prevNotEmpty = fitY-1 > 0 && !tiles[fitY-1][fitX + i].isEmpty();
+				boolean nextNotEmpty = fitY+1 < tiles.length && !tiles[fitY+1][fitX + i].isEmpty();
+				if(prevNotEmpty || nextNotEmpty) {
+					fitX = -1;
+					fitY = -1;
+					break;
+				}
+			}
+			if(fitX > 0 && fitY > 0) {
+				// jeśli wcześniej lub później w pionie znajduje się jakieś słowo
+				// to porzuć rozwiązanie
+				boolean prevNotEmpty = fitX-1 > 0 && !tiles[fitY][fitX-1].isEmpty();
+				boolean nextNotEmpty = fitX+1 < tiles[fitY].length && !tiles[fitY][fitX+1].isEmpty();
+				if(prevNotEmpty || nextNotEmpty) {
+					fitX = -1;
+					fitY = -1;
+				}
+			}
+		}
+		
+		if(fitX > 0 && fitY > 0) {
+			// znaleźliśmy miejsce dla słowa, które składa się z literek
+			// które mamy oraz nie koliduje w poziomie z innymi słowami
+			// konstruujemy odpowiedź do serwera gry
+			SActionPut.PutLetter plet;
+			SActionPut.PutLetter[] plets = new SActionPut.PutLetter[word.length()];
+			for(int i = 0; i < word.length(); ++i) {
+				plet = new SActionPut.PutLetter();
+				plet.let = word.charAt(i);
+				plet.pos = new SPos((short) (fitX + i), (short) fitY);
+				plets[i] = plet;
+			}
+			
+			return new SActionPut(plets, SActionPut.Orien.HOR);
+		} else {
+			return new SActionSkip();
+		}
 	}
 	
 	private DataInputStream min;
@@ -276,4 +281,5 @@ public class SPlayer {
 	private SRules mrul;
 	private BufferedReader mdict;
 	private String[] mwords;
+	private Random mrand = new Random(System.nanoTime());
 }
