@@ -54,7 +54,7 @@ using namespace boost::range;
 namespace po = boost::program_options;
 
 
-const string NAME = "Scrabble Server v1";
+const string NAME = "Scrabble Server v2";
 
 #ifdef __FreeBSD__
 	#include <sys/types.h>
