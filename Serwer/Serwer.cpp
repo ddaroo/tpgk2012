@@ -617,7 +617,7 @@ bool CGameState::validateAction(const PutLetters &action, const CPlayerState &ps
 	wordCenter += action.letters.back().letter; //dodajemy ostatnia litera bo petla jest po parach (do size - 1)
 
 	const string beforeWord = board.lettersNextTo(action.letters.front().pos, action.orientation, false),
-		afterWord = board.lettersNextTo(action.letters.front().pos, action.orientation, true);
+		afterWord = board.lettersNextTo(action.letters.back().pos, action.orientation, true);
 
 	const string wholeWord = beforeWord + wordCenter + afterWord;
 	LOGF("Player attempts to create a word: \"%s\". ", wholeWord);
