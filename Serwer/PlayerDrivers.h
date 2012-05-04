@@ -9,6 +9,7 @@ struct CRules;
 struct IPlayerDriver
 {
 	int playerID;
+	string playerName;
 
 	virtual void init(const CRules &r) = 0;
 	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps) = 0;

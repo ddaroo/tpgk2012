@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.logging.Level;
 
 import main.SApp;
+import main.SMsg;
 import main.STimeLogger;
 
 /**
@@ -23,16 +24,18 @@ public class SPlayer {
 	 * Metoda wołana przed rozpoczęciem gry. Inicjuje dane ze słownika.
 	 * 
 	 * @param rul Aktywne reguły dla tej rozgrywki.
+	 * @return userId Nazwa która będzie identyfikowała użytkownika na serwerze.
 	 */
-	public void init(SRules rul, BufferedReader dict) throws IOException {
+	public String init(SRules rul, BufferedReader dict) throws IOException {
 		STimeLogger.logStart(Level.INFO, "Inicjalizacja danych ze słownika");
 		mrul = rul;
 		mdict = dict;
 		
 		// zamiast wywołania poniższej metody można zaimplementować swoją wypasioną wersję!
-		simpleInit(rul, dict);
+		String userId = simpleInit(rul, dict);
 
 		STimeLogger.logFinish(Level.INFO, "Dane zainicjowane");
+		return userId;
 	}
 
 	/**
@@ -40,8 +43,9 @@ public class SPlayer {
 	 * inicjalizacji pierwszych kilkuset tysięcy słów ze słownika.
 	 * 
 	 * @param rul Aktywne reguły dla tej rozgrywki.
+	 * @return userId Nazwa która będzie identyfikowała użytkownika na serwerze.
 	 */
-	public void simpleInit(SRules rul, BufferedReader dict) throws IOException {
+	public String simpleInit(SRules rul, BufferedReader dict) throws IOException {
 		int size = 200000;
 		mwords = new String[size];
 		for (int i = 0; i < size; ++i) {
@@ -51,6 +55,8 @@ public class SPlayer {
 			}
 			mwords[i] = dict.readLine();
 		}
+		
+		return "Gal Anonim";
 	}
 	
 	/**
@@ -65,7 +71,9 @@ public class SPlayer {
 			// pobierz reguły gry
 			SRules rul = new SRules();
 			rul.readData(min);
-			init(rul, dict); // inicjuj dane do rozgrywki
+			SMsg userId = new SMsg(init(rul, dict)); // inicjuj dane do rozgrywki
+			userId.writeData(mout); // zwróć nazwe użytkownika
+			mout.flush(); // upewnij się, że dane zostały wysłane
 			while(true) {
 				// koniec gry?
 				gameFinished = min.readBoolean();

@@ -234,6 +234,14 @@ void JavaPlayer::init(const CRules &r)
 {
 	try {
 		r.writeData(socket);
+		// client returns name of an user
+		char len, ch;
+		read(socket, boost::asio::buffer(&len, 1));
+		for(int i = 0; i < len; ++i) 
+		{
+			read(socket, boost::asio::buffer(&ch, 1));
+			playerName.push_back(ch);
+		}
 	} CATCH_LOG
 }
 

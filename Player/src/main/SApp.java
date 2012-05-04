@@ -58,13 +58,14 @@ public class SApp {
 		}
 		
 		if(args.length == 0) {
-			SApp.mlog.log(Level.INFO, "Sposób użycia: program <port>");
+			SApp.mlog.log(Level.INFO, "Sposób użycia: program <port> <opcjonalna ścieżka do pliku słownika>");
 			System.exit(ExitStat.ALL_OK.ordinal());
 		}
 		
-		// sprawdź czy słownik o nazwie "dict.txt" jest obecny w katalogu programu
+		// sprawdź czy słownik o nazwie "dict.txt" jest dostępny dla programu
 		try {
-			mdict = new BufferedReader(new FileReader("dict.txt"));
+			String dictPath = args.length > 1 ? args[1] : "dict.txt";
+			mdict = new BufferedReader(new FileReader(dictPath));
 		} catch(IOException e) {
 			SApp.mlog.log(Level.SEVERE, e.getMessage());
 			System.exit(ExitStat.NO_DICT.ordinal());
