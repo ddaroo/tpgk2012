@@ -37,13 +37,13 @@ public class SPos {
 	}
 	
 	public void writeData(DataOutputStream dout) throws IOException {
-		dout.writeShort(mx);
 		dout.writeShort(my);
+		dout.writeShort(mx);
 	}
 
 	public void readData(DataInputStream din) throws IOException {
-		mx = din.readShort();
 		my = din.readShort();
+		mx = din.readShort();
 	}
 	
 	private short mx;

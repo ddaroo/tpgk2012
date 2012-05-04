@@ -42,11 +42,11 @@ public class SPlayer {
 	 * @param rul Aktywne reguły dla tej rozgrywki.
 	 */
 	public void simpleInit(SRules rul, BufferedReader dict) throws IOException {
-		int size = 200000;
+		int size = 600000;
 		mwords = new String[size];
 		for (int i = 0; i < size; ++i) {
-			// dla większego zróżnicowania wczytujemy co dziesiąte słowo
-			for(int j = 0; j < 10; ++j) {
+			// dla większego zróżnicowania wczytujemy co czwarte słowo
+			for(int j = 0; j < 3; ++j) {
 				dict.readLine();
 			}
 			mwords[i] = dict.readLine();
@@ -237,8 +237,8 @@ public class SPlayer {
 			for(int i = 0; i < word.length(); ++i) {
 				// jeśli we wcześniejszym lub kolejnym wierszu znajduje się 
 				// jakaś literka w poziomie to porzuć obecne rozwiązanie
-				boolean prevNotEmpty = fitY-1 > 0 && !tiles[fitY-1][fitX + i].isEmpty();
-				boolean nextNotEmpty = fitY+1 < tiles.length && !tiles[fitY+1][fitX + i].isEmpty();
+				boolean prevNotEmpty = fitY-1 >= 0 && !tiles[fitY-1][fitX + i].isEmpty() && tiles[fitY][fitX + i].isEmpty();
+				boolean nextNotEmpty = fitY+1 < tiles.length && !tiles[fitY+1][fitX + i].isEmpty() && tiles[fitY][fitX + i].isEmpty();
 				if(prevNotEmpty || nextNotEmpty) {
 					fitX = -1;
 					fitY = -1;
@@ -248,7 +248,7 @@ public class SPlayer {
 			if(fitX > 0 && fitY > 0) {
 				// jeśli wcześniej lub później w pionie znajduje się jakieś słowo
 				// to porzuć rozwiązanie
-				boolean prevNotEmpty = fitX-1 > 0 && !tiles[fitY][fitX-1].isEmpty();
+				boolean prevNotEmpty = fitX-1 >= 0 && !tiles[fitY][fitX-1].isEmpty();
 				boolean nextNotEmpty = fitX+1 < tiles[fitY].length && !tiles[fitY][fitX+1].isEmpty();
 				if(prevNotEmpty || nextNotEmpty) {
 					fitX = -1;
@@ -266,7 +266,7 @@ public class SPlayer {
 			for(int i = 0; i < word.length(); ++i) {
 				plet = new SActionPut.PutLetter();
 				plet.let = word.charAt(i);
-				plet.pos = new SPos((short) (fitX + i), (short) fitY);
+				plet.pos = new SPos((short) fitY, (short) (fitX + i));
 				plets[i] = plet;
 			}
 			

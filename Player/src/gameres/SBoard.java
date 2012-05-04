@@ -26,7 +26,7 @@ public class SBoard {
 			for (short j = 0; j < m; j++) {
 				tile = new STile();
 				tile.readData(din);
-				mb[i][j] = tile;
+				mb[j][i] = tile;
 			}
 		}
 	}
