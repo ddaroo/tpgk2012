@@ -42,11 +42,11 @@ public class SPlayer {
 	 * @param rul Aktywne reguły dla tej rozgrywki.
 	 */
 	public void simpleInit(SRules rul, BufferedReader dict) throws IOException {
-		int size = 400000;
+		int size = 200000;
 		mwords = new String[size];
 		for (int i = 0; i < size; ++i) {
-			// dla większego zróżnicowania wczytujemy co czwarte słowo
-			for(int j = 0; j < 3; ++j) {
+			// dla większego zróżnicowania wczytujemy co dziesiąte słowo
+			for(int j = 0; j < 9; ++j) {
 				dict.readLine();
 			}
 			mwords[i] = dict.readLine();
