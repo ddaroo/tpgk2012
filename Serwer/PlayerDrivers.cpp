@@ -163,6 +163,11 @@ void CppDummyPlayer::init(const CRules& rul)
     rules = &rul;
 }
 
+CppDummyPlayer::CppDummyPlayer()
+{
+	playerName = "Dummy C++ player";
+}
+
 JavaPlayer::JavaPlayer(string programName) // TODO programName is unused
 	: socket(io)
 {
@@ -194,7 +199,8 @@ TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 	TAction act;
 	ExchangeLetters ex;
 	PutLetters put;
-	try {
+	try 
+	{
 		// write all data neccessary to take action
 		char temp = 0;
 		write(socket, boost::asio::buffer(&temp, 1)); // 0 - game is not finished yet
@@ -203,19 +209,19 @@ TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 		
 		// read acton perfomed by the player
 		read(socket, boost::asio::buffer(&temp, 1));
-		char size;
+		//char size;
 		
 		switch(temp)
 		{
-		    case 0:
+		case 0:
 			ex.readData(socket);
 			return ex;
-		    case 1:
+		case 1:
 			put.readData(socket);
 			return put;
-		    case 2:
+		case 2:
 			return SkipTurn();
-		    default:
+		default:
 			LOGL("Connection problems with Java player"); // cos sie rozjechalo :(
 		}
 	} CATCH_LOG
@@ -232,7 +238,8 @@ void JavaPlayer::gameFinished()
 
 void JavaPlayer::init(const CRules &r)
 {
-	try {
+	try 
+	{
 		r.writeData(socket);
 		// client returns name of an user
 		char len, ch;

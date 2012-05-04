@@ -51,6 +51,7 @@ using boost::format;
 
 using namespace std;
 using namespace boost::range;
+namespace po = boost::program_options;
 
 
 const string NAME = "Scrabble Server v1";
@@ -222,3 +223,6 @@ inline string formatLetters(const vector<CLetter> &letters)
 	}
 	return out.str();
 }
+
+
+extern po::variables_map vm; //tu trzymamy parametry przekazane w linii komend

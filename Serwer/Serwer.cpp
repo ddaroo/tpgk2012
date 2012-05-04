@@ -6,18 +6,28 @@
 
 CSerwer::CSerwer(void)
 {
-	bool java = true;
-        FOREACH(auto &ps, gs.players)
+    FOREACH(const auto &ps, gs.players)
 	{
-		//TODO tutaj bedziemy tworzyc graczy socketowych, na razie dummy w c++
-		if(java) {
-		    playerDrivers[ps.ID] = new JavaPlayer("ScrabPlayer.jar");
-		    playerDrivers[ps.ID]->init(gs.rules);
-		    java = false;
-		} else {
-		    playerDrivers[ps.ID] = new CppDummyPlayer();
-		    playerDrivers[ps.ID]->init(gs.rules);
-		}	
+		LOGFL("Creating player #%d...", ps.ID);
+		const int socketPlayersCount = vm["connections"].as<unsigned>();
+		assert(socketPlayersCount <= gs.players.size());
+
+		auto &driver = playerDrivers[ps.ID];
+		if(ps.ID < socketPlayersCount) 
+			driver = make_unique<JavaPlayer>("ScrabPlayer.jar");
+		else 
+			driver = make_unique<CppDummyPlayer>();
+
+		{
+			CHECK_TIME_FORMAT("\tTime spent by player %d on initialization: ", ps.ID);
+			driver->init(gs.rules);
+		}
+	}
+
+	LOGL("Finished setting up players. They are:");
+	FOREACH(const auto &pd, playerDrivers)
+	{
+		LOGFL("\t%d. %s (type %s)", pd.first % pd.second->playerName % typeid(*pd.second).name());
 	}
 }
 
@@ -38,8 +48,7 @@ void CSerwer::run()
 		gs.applyAction(action);
 	} while(!gs.isGameFinished());
 	
-	map<int, IPlayerDriver*>::iterator it;
-	for(it = playerDrivers.begin(); it != playerDrivers.end(); ++it) 
+	for(auto it = playerDrivers.begin(); it != playerDrivers.end(); ++it) 
 	{
 		(*it).second->gameFinished();
 	}
@@ -238,13 +247,23 @@ CGameState::CGameState()
 	activePlayer = turn = -1;
 	createLetters();
 
-	for (int i = 0; i < PLAYER_COUNT; i++)
+	const int playersCount = vm["players"].as<unsigned>();
+	LOGFL("There will be %d players participating in game.", playersCount);
+	LOGFL("%d of them will be handled through TCP socket.", vm["connections"].as<unsigned>());
+
+	for (int i = 0; i < playersCount; i++)
 		addNewPlayer();
 }
 
 void CGameState::createLetters()
 {
 	ifstream lettersInfo("conf_letters.txt");
+	if(!lettersInfo)
+	{
+		LOGL("Critical error: Cannot open conf_letters.txt");
+		throw std::runtime_error("Critical error: Cannot open conf_letters.txt");
+	}
+
 	while(true)
 	{
 		istringstream line;

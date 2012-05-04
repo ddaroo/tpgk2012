@@ -6,7 +6,7 @@
 #include "StopWatch.h"
 #include "Dictionary.h"
 
-namespace po = boost::program_options;
+po::variables_map vm; //tu trzymamy parametry przekazane w linii komend
 
 void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 {
@@ -15,7 +15,9 @@ void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 	opts.add_options()
 		("seed,s", po::value<unsigned>()->default_value(0), "seed for random number generator")
 		("help,h", "display help and exit")
-		("dictionary,d",po::value<std::string>()->default_value("./dict.txt"), "file with dictionary");
+		("dictionary,d",po::value<std::string>()->default_value("./dict.txt"), "file with dictionary")
+		("players,p",po::value<unsigned>()->default_value(4), "number of participating players")
+		("connections,c",po::value<unsigned>()->default_value(1), "number of socket-connected players to be expected");
 	po::store(po::parse_command_line(argc, argv, opts), vm);
 	po::notify(vm);
 
@@ -39,7 +41,6 @@ int main(int argc, char *argv[])
 	cout << "Polskie znaki:\n\tzazolc gesla jazn\n\tzażółć gęślą jaźń\n";
 	try
 	{
-		po::variables_map vm; //tu trzymamy parametry przekazane w linii komend
 		handleStartingParameters(argc, argv, vm);
 
 		CDictionary dict(vm["dictionary"].as<string>());
@@ -51,7 +52,6 @@ int main(int argc, char *argv[])
 
 		CSerwer s;
 		s.run();
-
 	} CATCH_LOG
 
 

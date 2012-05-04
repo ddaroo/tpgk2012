@@ -121,7 +121,7 @@ class CSerwer : boost::noncopyable
 {
 public:
 	CGameState gs;
-	map<int, IPlayerDriver*> playerDrivers;
+	map<int, unique_ptr<IPlayerDriver> > playerDrivers;
 
 	CSerwer(void);
 	~CSerwer(void);

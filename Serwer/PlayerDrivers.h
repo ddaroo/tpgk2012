@@ -20,6 +20,7 @@ struct IPlayerDriver
 
 struct CppDummyPlayer : IPlayerDriver
 {
+	CppDummyPlayer();
 	virtual void init(const CRules &rul);
 	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps) override;
 	virtual void gameFinished() override;
