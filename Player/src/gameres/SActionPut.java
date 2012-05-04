@@ -1,6 +1,7 @@
 package gameres;
 
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * Wstawia słowo
@@ -26,11 +27,11 @@ public class SActionPut extends SAction {
 		}
 	}
 	
-	public SActionPut(SActionPut.PutLetter[] lets, SActionPut.Orien orien) {
+	public SActionPut(ArrayList<SActionPut.PutLetter> lets, SActionPut.Orien orien) {
 		setWord(lets, orien);
 	}
 	
-	public void setWord(SActionPut.PutLetter[] lets, SActionPut.Orien orien) {
+	public void setWord(ArrayList<SActionPut.PutLetter> lets, SActionPut.Orien orien) {
 		mlets = lets;
 		morien = orien;
 	}
@@ -39,7 +40,7 @@ public class SActionPut extends SAction {
 	public void writeData(DataOutputStream dout) throws IOException {
 		dout.writeByte(ActionId.PUT_LETTERS.ordinal());
 		dout.writeByte(morien.ordinal());
-		dout.writeByte(mlets.length);
+		dout.writeByte(mlets.size());
 		for(PutLetter let : mlets) {
 			dout.writeByte(let.let);
 			dout.writeBoolean(let.fromBlank);
@@ -47,6 +48,6 @@ public class SActionPut extends SAction {
 		}
 	}
 	
-	SActionPut.PutLetter[] mlets;
+	ArrayList<SActionPut.PutLetter> mlets;
 	private SActionPut.Orien morien;
 }

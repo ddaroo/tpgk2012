@@ -42,7 +42,7 @@ public class SPlayer {
 	 * @param rul Aktywne reguły dla tej rozgrywki.
 	 */
 	public void simpleInit(SRules rul, BufferedReader dict) throws IOException {
-		int size = 600000;
+		int size = 400000;
 		mwords = new String[size];
 		for (int i = 0; i < size; ++i) {
 			// dla większego zróżnicowania wczytujemy co czwarte słowo
@@ -249,7 +249,7 @@ public class SPlayer {
 				// jeśli wcześniej lub później w pionie znajduje się jakieś słowo
 				// to porzuć rozwiązanie
 				boolean prevNotEmpty = fitX-1 >= 0 && !tiles[fitY][fitX-1].isEmpty();
-				boolean nextNotEmpty = fitX+1 < tiles[fitY].length && !tiles[fitY][fitX+1].isEmpty();
+				boolean nextNotEmpty = fitX+word.length() < tiles[fitY].length && !tiles[fitY][fitX+word.length()].isEmpty();
 				if(prevNotEmpty || nextNotEmpty) {
 					fitX = -1;
 					fitY = -1;
@@ -262,15 +262,20 @@ public class SPlayer {
 			// które mamy oraz nie koliduje w poziomie z innymi słowami
 			// konstruujemy odpowiedź do serwera gry
 			SActionPut.PutLetter plet;
-			SActionPut.PutLetter[] plets = new SActionPut.PutLetter[word.length()];
+			ArrayList<SActionPut.PutLetter> plets = new ArrayList<SActionPut.PutLetter>();
 			for(int i = 0; i < word.length(); ++i) {
-				plet = new SActionPut.PutLetter();
-				plet.let = word.charAt(i);
-				plet.pos = new SPos((short) fitY, (short) (fitX + i));
-				plets[i] = plet;
+				if(tiles[fitY][fitX + i].isEmpty()) {
+					plet = new SActionPut.PutLetter();
+					plet.let = word.charAt(i);
+					plet.pos = new SPos((short) fitY, (short) (fitX + i));
+					plets.add(plet);
+				}
 			}
-			
-			return new SActionPut(plets, SActionPut.Orien.HOR);
+			if(plets.size() > 0) {
+				return new SActionPut(plets, SActionPut.Orien.HOR);
+			} else {
+				return new SActionSkip();
+			}
 		} else {
 			return new SActionSkip();
 		}
