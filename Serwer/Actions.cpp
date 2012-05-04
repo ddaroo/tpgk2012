@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Actions.h"
 
 void ExchangeLetters::readData(boost::asio::ip::tcp::socket& sock)

@@ -156,6 +156,7 @@
     <ClInclude Include="StopWatch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Actions.cpp" />
     <ClCompile Include="Dictionary.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PlayerDrivers.cpp" />
