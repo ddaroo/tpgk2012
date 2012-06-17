@@ -109,6 +109,7 @@ typedef std::int8_t si8; //signed int 8 bits (1 byte)
 		LOGL("Unknown exception!"); \
 	} 
 
+#define MY_THROW(error_msg) do{LOGL(error_msg); throw std::runtime_error(error_msg);}while(0)
 
 namespace vstd
 {

@@ -59,6 +59,9 @@ void CDictionary::readFile(crstring fname)
 	CHECK_TIME("Reading dictionary file");
 	int totalReadCount = 0;
 	ifstream file(fname);
+	if(!file)
+		MY_THROW("Critical error: Cannot open file with dictionary: " + fname);
+
 	while(file)
 	{
 		//pierwszego bajtu nie ruszamy, chcemy miec wiodacy NULL (zeby pierwsze slowo tez z obu stron bylo otoczone NULL-ami)

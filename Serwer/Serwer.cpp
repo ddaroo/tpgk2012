@@ -6,6 +6,13 @@
 
 CSerwer::CSerwer(void)
 {
+	if(vm["initTime"].as<unsigned>())
+		timeLimitForInit = vm["initTime"].as<unsigned>();
+	if(vm["moveTime"].as<unsigned>())
+		timeLimitForMove = vm["moveTime"].as<unsigned>();
+
+	LOGFL("Time for init is %s seconds, time for move %s seconds", timeLimitForInit % timeLimitForMove);
+
     FOREACH(const auto &ps, gs.players)
 	{
 		LOGFL("Creating player #%d...", ps.ID);
@@ -18,10 +25,11 @@ CSerwer::CSerwer(void)
 		else 
 			driver = make_unique<CppDummyPlayer>();
 
+		realizeWithTimeLimit(timeLimitForInit, [&]
 		{
 			CHECK_TIME_FORMAT("\tTime spent by player %d on initialization: ", ps.ID);
 			driver->init(gs.rules);
-		}
+		});
 	}
 
 	LOGL("Finished setting up players. They are:");
@@ -40,17 +48,80 @@ void CSerwer::run()
 	do
 	{
 		int playerToMove = gs.nextMove();
-		TAction action;
+		try
 		{
-			CHECK_TIME_FORMAT("Player %d was thinking", playerToMove);
-			action = playerDrivers[playerToMove]->takeAction(gs.board, gs.players[playerToMove]);
+			TAction action;
+			realizeWithTimeLimit(timeLimitForMove, [&]
+			{
+				CHECK_TIME_FORMAT("Player %d was thinking", playerToMove);
+				action = playerDrivers[playerToMove]->takeAction(gs.board, gs.players[playerToMove]);
+			});
+			gs.applyAction(action);
 		}
-		gs.applyAction(action);
+		catch(std::exception &e)
+		{
+			LOGFL("Encountered an exception during player %d turn: %s", playerToMove % e.what());
+			if(vm.count("lenient"))
+			{
+				LOGFL("We're in a lenient mode, so this will be forgiven. Player %d will lost turn.", playerToMove);
+			}
+			else
+			{
+				LOGL("It's unforgivable. The game will end.");
+				throw;
+			}
+		}
 	} while(!gs.isGameFinished());
 	
 	for(auto it = playerDrivers.begin(); it != playerDrivers.end(); ++it) 
 	{
 		(*it).second->gameFinished();
+	}
+
+	LOGL("Game results:");
+	FOREACH(auto player, gs.players)
+	{
+		LOGFL("\tPlayer %d - %d points.", player.ID % player.points);
+	}
+}
+
+
+
+void CSerwer::realizeWithTimeLimit(boost::optional<int> timeLimit, function<void()> action)
+{
+	if(!timeLimit)
+	{
+		action();
+	}
+	else
+	{
+		bool timeLimitExceeded = false;
+		int limitInMs = *timeLimit;
+		boost::thread t([&]() -> bool
+		{
+			CStopWatch timer;
+			action();
+			auto timePassed = timer.getDiff();
+			if(timePassed > limitInMs)
+			{
+				LOGFL("Time limit exceeded: used time was %d ms while the limit was %d ms!", timePassed % limitInMs);
+				timeLimitExceeded = true;
+			}
+
+			return true;
+		});
+
+		CStopWatch mainThreadWatch;
+		if(!t.timed_join(boost::posix_time::milliseconds(limitInMs * 2)))
+		{
+			//watek sie nie skonczyl mimo dlugiego czekania
+			LOGFL("We've been waiting for %d ms (while the limit was %d) but the program is still not responding. Totally unacceptable! Server will close.", mainThreadWatch.getDiff() % limitInMs);
+			cout << flush;
+			exit(-1);
+		}
+
+		if(timeLimitExceeded)
+			throw std::runtime_error("Time limit has been exceeded!");
 	}
 }
 
@@ -259,10 +330,7 @@ void CGameState::createLetters()
 {
 	ifstream lettersInfo("conf_letters.txt");
 	if(!lettersInfo)
-	{
-		LOGL("Critical error: Cannot open conf_letters.txt");
-		throw std::runtime_error("Critical error: Cannot open conf_letters.txt");
-	}
+		MY_THROW("Critical error: Cannot open conf_letters.txt");
 
 	while(true)
 	{

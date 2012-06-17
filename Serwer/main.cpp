@@ -1,6 +1,5 @@
 // Scrabble.cpp : Defines the entry point for the console application.
 //
-
 #include "stdafx.h"
 #include "Serwer.h"
 #include "StopWatch.h"
@@ -17,7 +16,10 @@ void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 		("help,h", "display help and exit")
 		("dictionary,d",po::value<std::string>()->default_value("./dict.txt"), "file with dictionary")
 		("players,p",po::value<unsigned>()->default_value(4), "number of participating players")
-		("connections,c",po::value<unsigned>()->default_value(1), "number of socket-connected players to be expected");
+		("connections,c",po::value<unsigned>()->default_value(1), "number of socket-connected players to be expected")
+		("moveTime", po::value<unsigned>()->default_value(0), "time in milliseconds for player to make his move; 0 disables checking")
+		("initTime", po::value<unsigned>()->default_value(0), "time in milliseconds for player to initialize; 0 disables checking")
+		("lenient,l", "when player takes an illegal action, server complains but doesn't end the game");
 	po::store(po::parse_command_line(argc, argv, opts), vm);
 	po::notify(vm);
 
@@ -38,7 +40,13 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 	system("chcp 1250"); //zeby polskie znaki sie wyswietlaly (UWAGA - nie dziala z rastrowymi czcionkami w cmd.exe)
 #endif
-	cout << "Polskie znaki:\n\tzazolc gesla jazn\n\tzażółć gęślą jaźń\n";
+
+	cout << "Program wypisuje znaki w kodowaniu windows-1250. Ponizej test polskich znakow:\n";
+	const char zazolc1250[] = {'z', 'a', 0xbf, 0xf3, 0xb3, 0xe6, ' ', 'g', 0xea, 0x9c, 'l', 0xb9,
+								' ', 'j', 'a', 0x9f, 0xf1, 0};
+	const char *zazolcBezPol = "zazolc gesla jazn";
+
+	cout << "\t" << zazolcBezPol << "\n\t" << zazolc1250 << endl;
 	try
 	{
 		handleStartingParameters(argc, argv, vm);
@@ -55,5 +63,6 @@ int main(int argc, char *argv[])
 	} CATCH_LOG
 
 
+	cout << flush;
 	return EXIT_SUCCESS;
 }

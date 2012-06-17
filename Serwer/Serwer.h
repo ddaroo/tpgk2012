@@ -120,6 +120,8 @@ struct CGameState : boost::noncopyable
 class CSerwer : boost::noncopyable
 {
 public:
+	boost::optional<int> timeLimitForMove, timeLimitForInit; //in seconds
+
 	CGameState gs;
 	map<int, unique_ptr<IPlayerDriver> > playerDrivers;
 
@@ -127,6 +129,7 @@ public:
 	~CSerwer(void);
 
 	void run();
+	void realizeWithTimeLimit(boost::optional<int> timeLimit, function<void()> action);
 };
 
 
