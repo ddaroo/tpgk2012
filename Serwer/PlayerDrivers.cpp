@@ -21,7 +21,7 @@ TAction CppDummyPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 			lettersOnBoard.push_back(make_pair(*t.letter, t.pos));
 	});
 
-	if(lettersOnBoard.empty())
+	if(b.empty())
 	{
 		//na starcie trzeba ulozyc slowo idace przez srodek z 2+ liter
 		vector<string> possibleWords;
@@ -71,7 +71,7 @@ TAction CppDummyPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 		string chosen = possibleWords.back();
 		LOGFL("The best word is %s worth %d points.", chosen % r.wordBasicValue(chosen));
 		PutLetters ret;
-		Pos curPos = Pos(WIDTH / 2, HEIGHT / 2); //start with center tile
+		Pos curPos = b.centerTile(); //start with center tile
 		Pos direction = Pos(0,1); //downwards
 		ret.orientation = VERTICAL;
 		FOREACH(char c, chosen)

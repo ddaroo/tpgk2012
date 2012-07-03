@@ -38,8 +38,10 @@ struct CBoard : boost::noncopyable
 	CBoard();
 
 	CTile &tile(Pos p);
-	const CTile &tile(Pos p) const;
+	const CTile &tile(Pos p) const; //srodkowe pole planszy, pierwsze slowo musi przez to pole przechodzic
+	bool empty() const; //true if there are no letters on the board
 
+	Pos centerTile() const;
 	string lettersNextTo(Pos pos, EOrientation orientation, bool forward) const; //DOESNT include the pos itself
 	string wordGeneratedbyLetter(char letter, Pos pos, EOrientation orientation) const; //if the letter were to be put on tile, what word would be created horizontally/vertically
 	vector<string> wordsGeneratedbyLetter(char letter, Pos pos) const; //if the letter were to be put on tile, what words will be created
@@ -51,6 +53,7 @@ struct CBoard : boost::noncopyable
 	//algorithms
 	void foreachPos(function<void(Pos)> func) const; //calls func with every valid (x,y)
 	void foreachTile(function<void(const CTile &)> func) const; //calls func with every valid tile -> will go in rows from top
+
 	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
 

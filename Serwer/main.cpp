@@ -17,8 +17,8 @@ void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 		("dictionary,d",po::value<std::string>()->default_value("./dict.txt"), "file with dictionary")
 		("players,p",po::value<unsigned>()->default_value(4), "number of participating players")
 		("connections,c",po::value<unsigned>()->default_value(1), "number of socket-connected players to be expected")
-		("moveTime", po::value<unsigned>()->default_value(0), "time in milliseconds for player to make his move; 0 disables checking")
-		("initTime", po::value<unsigned>()->default_value(0), "time in milliseconds for player to initialize; 0 disables checking")
+		("moveTime", po::value<unsigned>()->default_value(15000), "time in milliseconds for player to make his move; 0 disables checking")
+		("initTime", po::value<unsigned>()->default_value(30000), "time in milliseconds for player to initialize; 0 disables checking")
 		("lenient,l", "when player takes an illegal action, server complains but doesn't end the game");
 	po::store(po::parse_command_line(argc, argv, opts), vm);
 	po::notify(vm);

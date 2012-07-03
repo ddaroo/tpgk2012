@@ -313,6 +313,21 @@ WordRange CBoard::getWordRange(Pos pos, EOrientation orientation)
 		lastLetterInDirection(pos, forwardDirection(orientation))		);
 }
 
+Pos CBoard::centerTile() const
+{
+	return Pos(WIDTH / 2, HEIGHT / 2); 
+}
+
+bool CBoard::empty() const
+{
+	for (int j = 0; j < HEIGHT ; j++)
+		for (int i = 0; i < WIDTH ; i++)
+			if(tiles[i][j].letter)
+				return false;
+
+	return true;
+}
+
 CGameState::CGameState()
 {
 	activePlayer = turn = -1;
@@ -637,10 +652,26 @@ bool CGameState::validateAction(const PutLetters &action, const CPlayerState &ps
 		LOGL("Put letters request declared an invalid direction!");
 		return false;
 	}
+
 	if(action.letters.empty()) //jak kladziemy, to kladziemy
 	{
 		LOGL("Put letters request doesn't contain any letters to put!");
 		return false;
+	}
+
+	if(board.empty())
+	{
+		Pos center = board.centerTile();
+		auto itr = find_if(action.letters, [=](PutLetters::PutLetter pl)
+		{
+			return pl.pos == center;
+		});
+
+		if(itr == action.letters.end())
+		{
+			LOGL("First word put on the board has to go through the middle tile!");
+			return false;
+		}
 	}
 
 
