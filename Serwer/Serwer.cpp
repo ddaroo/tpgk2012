@@ -17,7 +17,7 @@ CSerwer::CSerwer(void)
 	{
 		LOGFL("Creating player #%d...", ps.ID);
 		const int socketPlayersCount = vm["connections"].as<unsigned>();
-		assert(socketPlayersCount <= gs.players.size());
+		assert(socketPlayersCount <= (int) gs.players.size());
 
 		auto &driver = playerDrivers[ps.ID];
 		if(ps.ID < socketPlayersCount) 

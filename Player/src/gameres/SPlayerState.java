@@ -45,12 +45,30 @@ public class SPlayerState {
 		mID = din.readShort();
 		mpoints = din.readShort();
 		short n = din.readShort();
-		mletters = new ArrayList<Character>();
+		setMletters(new ArrayList<Character>());
 		for (short i = 0; i < n; ++i) {
-			mletters.add((char) din.readByte());
+			byte input = din.readByte();
+			Character letter = SCharacterCoder.processInput(input);
+			getMletters().add(letter);
 		}
 	}
 
+	public ArrayList<Character> getMletters() {
+		return mletters;
+	}
+	
+	public ArrayList<Character> getMlettersCopy() {
+		ArrayList<Character> copy = new ArrayList<Character>();
+		for (Character character : this.mletters) {
+			copy.add(character.charValue());
+		}
+		return copy;
+	}
+
+	public void setMletters(ArrayList<Character> mletters) {
+		this.mletters = mletters;
+	}
+	
 	private short mexchanges;
 	private short mturnsSkipped;
 	 // Unikalny identyfikator gracza.

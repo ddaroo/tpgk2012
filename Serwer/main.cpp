@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
 #endif
 
 	cout << "Program wypisuje znaki w kodowaniu windows-1250. Ponizej test polskich znakow:\n";
-	const char zazolc1250[] = {'z', 'a', 0xbf, 0xf3, 0xb3, 0xe6, ' ', 'g', 0xea, 0x9c, 'l', 0xb9,
-								' ', 'j', 'a', 0x9f, 0xf1, 0};
+	const char zazolc1250[] = {'z', 'a', (char) 0xbf, (char) 0xf3, (char) 0xb3, (char) 0xe6, ' ', 'g', (char) 0xea, (char) 0x9c, 'l', (char) 0xb9,
+								' ', 'j', 'a', (char) 0x9f, (char) 0xf1, (char) 0};
 	const char *zazolcBezPol = "zazolc gesla jazn";
 
 	cout << "\t" << zazolcBezPol << "\n\t" << zazolc1250 << endl;

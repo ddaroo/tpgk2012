@@ -1,13 +1,12 @@
 package gameres;
 
 import java.io.*;
-import java.util.ArrayList;
 
 /**
  * Plansza do gry Scrabble.
  */
 public class SBoard {
-	// TODO implementation
+
 	public SBoard() {}
 	
 	/**
@@ -27,6 +26,9 @@ public class SBoard {
 				tile = new STile();
 				tile.readData(din);
 				mb[j][i] = tile;
+				
+				if(tile.position().x() != j || tile.position().y() != i)
+					throw new IOException("Błąd serializacji pozycji płytek na planszy");
 			}
 		}
 	}

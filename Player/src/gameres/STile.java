@@ -41,7 +41,7 @@ public class STile {
 	}
 	
 	public boolean isEmpty() {
-		return mlet == STile.empty;
+		return (mlet == STile.empty);
 	}
 
 	public void readData(DataInputStream din) throws IOException {

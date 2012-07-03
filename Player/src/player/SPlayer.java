@@ -208,17 +208,17 @@ public class SPlayer {
 			for(int i = 0; i < tiles.length; ++i) {
 				int rowLength = tiles[i].length;
 				for(int j = 0; j < rowLength; ++j) {
-					if(rowLength - j - 1 < word.length()) {
+					if(rowLength - j < word.length()) {
 						// wyraz nie zmieści się w aktualnym wierszu
 						// spróbuj z następnym wierszem
-						break;
+						continue out_loop;
 					}
 					
 					// wyraz musi się przecinać z co najmniej jednym słowem
 					boolean atLeastOne = false; 
 					// sprawdzamy czy pasuje
 					for(int k = 0; k < word.length(); ++k) {
-						boolean sameLetter = tiles[i][j + k].letter() == word.charAt(k);
+						boolean sameLetter = (tiles[i][j + k].letter() == word.charAt(k));
 						if(sameLetter) {
 							atLeastOne = true;
 						}
@@ -231,6 +231,10 @@ public class SPlayer {
 								break out_loop;
 							}
 							continue;
+						}
+						else
+						{
+							break;
 						}
 					}
 				}
@@ -280,6 +284,7 @@ public class SPlayer {
 				}
 			}
 			if(plets.size() > 0) {
+				SApp.mlog.log(Level.INFO, "Kompletne słowo: ".concat(word));
 				return new SActionPut(plets, SActionPut.Orien.HOR);
 			} else {
 				return new SActionSkip();
