@@ -4,6 +4,14 @@
 #include "Dictionary.h"
 #include "PlayerDrivers.h"
 
+string toString(boost::optional<int> limit)
+{
+	if(limit)
+		return lexical_cast<string>(*limit);
+	else
+		return "<no limit>";
+}
+
 CSerwer::CSerwer(void)
 {
 	if(vm["initTime"].as<unsigned>())
@@ -11,7 +19,7 @@ CSerwer::CSerwer(void)
 	if(vm["moveTime"].as<unsigned>())
 		timeLimitForMove = vm["moveTime"].as<unsigned>();
 
-	LOGFL("Time for init is %s seconds, time for move %s seconds", timeLimitForInit % timeLimitForMove);
+	LOGFL("Time for init is %s miliseconds, time for move %s miliseconds", toString(timeLimitForInit) % toString(timeLimitForMove));
 
     FOREACH(const auto &ps, gs.players)
 	{
