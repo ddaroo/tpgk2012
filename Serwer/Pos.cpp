@@ -55,9 +55,9 @@ Pos Pos::operator-() const
 
 string Pos::toString() const
 {
-	string ret(3, 0);
-	ret[0] = intToChar(x);
-	ret[1] = intToChar(y);
+	string ret;
+	ret.push_back(intToChar(x));
+	ret.push_back(intToChar(y));
 	return ret;
 }
 
