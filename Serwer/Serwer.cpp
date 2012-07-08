@@ -723,12 +723,14 @@ bool CGameState::validateAction(const PutLetters &action, const CPlayerState &ps
 		}
 	}
 
+	int perpendicularWords = 0;
 	FOREACH(auto &ps, action.letters)
 	{
 		string perpendicularWord = board.wordGeneratedbyLetter(ps.letter, ps.pos, flip(action.orientation));
 		if(perpendicularWord.size() > 1)
 		{
 			LOGF("Perpendicular word created: \"%s\". ", perpendicularWord);
+			perpendicularWords++;
 			if(dictionary->contains(perpendicularWord))
 				LOGL("It's valid.");
 			else
@@ -753,6 +755,44 @@ bool CGameState::validateAction(const PutLetters &action, const CPlayerState &ps
 	{
 		LOGL("It's invalid!");
 		return false;
+	}
+
+	//slowo musi laczyc sie z lezacymi na planszy
+	//mozliwosci spelnienia
+	//1) wewnatrz kladzionych liter jest dziura wypelniona lezaca na planszy litera
+	//2) slowo idzie rownolegle, przylegle do innego (tworzy slowa prostopadle)
+	//3) slowo bezposrednio przed lub po sobie ma lezace na planszy litery
+	if(!board.empty()  &&  !perpendicularWords)
+	{
+		Pos p = action.letters.front().pos, 
+			afterLast = action.letters.back().pos + forwardDirection(action.orientation);
+
+		bool atLeastOneCommonLetter = false;
+
+		while(p != afterLast)
+		{
+			if(board.tile(p).letter)
+			{
+				atLeastOneCommonLetter = true;
+				break;
+			}
+			p += forwardDirection(action.orientation);
+		}
+
+		if(!atLeastOneCommonLetter)
+		{
+			Pos tileBefore = action.letters.front().pos + backwardDirection(action.orientation),
+				tileAfter = action.letters.back().pos + forwardDirection(action.orientation);
+
+			bool beforeFirst = tileBefore.isValid() && board.tile(tileBefore).letter;
+			bool afterLast = tileAfter.isValid() && board.tile(tileAfter).letter;
+
+			if(!beforeFirst && !afterLast)
+			{
+				LOGL("Players tries to put a word that is not adjoining words already present on board!");
+				return false;
+			}
+		}
 	}
 
 	return true;
