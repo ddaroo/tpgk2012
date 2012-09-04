@@ -1,0 +1,16 @@
+﻿<Application x:Class="Odpalarka.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+
+        <Style TargetType="{x:Type Grid}">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="OpacityMask" Value="#FF959595"/>
+        </Style>
+        <Style TargetType="{x:Type Label}">
+            <Setter Property="Foreground" Value="Gray"/>
+        </Style>
+
+    </Application.Resources>
+</Application>
