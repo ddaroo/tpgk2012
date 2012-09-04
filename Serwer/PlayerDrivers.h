@@ -45,4 +45,7 @@ struct JavaPlayer : IPlayerDriver
 	virtual TAction takeAction(const CBoard &b, const CPlayerState &ps) override;
 	virtual void gameFinished() override;
 	virtual ~JavaPlayer();
+
+	void przyjmijPolaczenie(TAcceptor &acceptor, int portNumber);;
+
 };

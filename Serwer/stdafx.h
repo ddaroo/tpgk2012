@@ -87,16 +87,16 @@ typedef std::int8_t si8; //signed int 8 bits (1 byte)
 
 
 //log text
-#define LOG(text) std::cout << text
+#define LOG(text) logger << text
 
 //log text and put new line
 #define LOGL(text) do{LOG(text); LOG("\n"); }while(0)
 
 //log text with format substitution and new line
-#define LOGFL(text, operands) do {LOGL(boost::format(text) % operands);}while(0)
+#define LOGFL(text, operands) do {LOGL(boost::str(boost::format(text) % operands));}while(0)
 
 //log text with format substitution and new line
-#define LOGF(text, operands) do {LOG(boost::format(text) % operands);}while(0)
+#define LOGF(text, operands) do {LOG(boost::str(boost::format(text) % operands));}while(0)
 
 //add catch blocks that log the exception
 #define CATCH_LOG \
@@ -225,5 +225,32 @@ inline string formatLetters(const vector<CLetter> &letters)
 	return out.str();
 }
 
+struct Logger
+{
+	unique_ptr<ofstream> oficjalnyLog;
+	string fname;
 
+	template<typename T>
+	Logger &operator<<(const T &rhs)
+	{
+		cout << rhs;
+		if(oficjalnyLog)
+			*oficjalnyLog << rhs << std::flush;
+
+		return *this;
+	}
+
+	Logger& operator<<(std::ostream& (*fun)(std::ostream&))
+	{
+		cout << fun;
+		if(oficjalnyLog)
+			*oficjalnyLog << fun << std::flush;
+
+		return *this;
+	}
+
+};
+
+extern Logger logger;
+extern vector<string> playerNames;
 extern po::variables_map vm; //tu trzymamy parametry przekazane w linii komend

@@ -38,12 +38,14 @@ CSerwer::CSerwer(void)
 			CHECK_TIME_FORMAT("\tTime spent by player %d on initialization: ", ps.ID);
 			driver->init(gs.rules);
 		});
+
+		driver->playerName = playerNames[ps.ID] + driver->playerName + " (" + typeid(*driver).name() + ")";
 	}
 
 	LOGL("Finished setting up players. They are:");
 	FOREACH(const auto &pd, playerDrivers)
 	{
-		LOGFL("\t%d. %s (type %s)", pd.first % pd.second->playerName % typeid(*pd.second).name());
+		LOGFL("\t%d. %s", pd.first % pd.second->playerName);
 	}
 }
 
@@ -71,11 +73,13 @@ void CSerwer::run()
 			LOGFL("Encountered an exception during player %d turn: %s", playerToMove % e.what());
 			if(vm.count("lenient"))
 			{
-				LOGFL("We're in a lenient mode, so this will be forgiven. Player %d will lost turn.", playerToMove);
+				LOGFL("We're in a lenient mode, so this will be forgiven. Player %d loses turn.", playerToMove);
+				gs.applyAction(SkipTurn());
 			}
 			else
 			{
 				LOGL("It's unforgivable. The game will end.");
+				disqualifyPlayerAndEnd(playerToMove, string("Unforgivable time limit violation: ") + e.what());
 				throw;
 			}
 		}
@@ -124,13 +128,26 @@ void CSerwer::realizeWithTimeLimit(boost::optional<int> timeLimit, function<void
 		{
 			//watek sie nie skonczyl mimo dlugiego czekania
 			LOGFL("We've been waiting for %d ms (while the limit was %d) but the program is still not responding. Totally unacceptable! Server will close.", mainThreadWatch.getDiff() % limitInMs);
-			cout << flush;
+			logger << flush;
 			exit(-1);
 		}
 
 		if(timeLimitExceeded)
 			throw std::runtime_error("Time limit has been exceeded!");
 	}
+}
+
+void CSerwer::disqualifyPlayerAndEnd(int id, string reason /*= ""*/)
+{
+	string name;
+	if(playerDrivers.count(id))
+		name = playerDrivers[id]->playerName;
+	else 
+		name = playerNames[id];
+
+	LOGFL("Disqualification! Reason: %s", reason);
+	LOGFL("Player %d is disqualified! Game ends! Shame on %s!", id % name);
+	exit(-1);
 }
 
 CBoard::CBoard()
@@ -601,26 +618,26 @@ void CGameState::applyAction(const ExchangeLetters &action)
 
 void CGameState::print() const
 {
-	cout << "\t |";
+	logger << "\t |";
 	for (int i = 0; i < WIDTH ; i++)
-		cout << intToChar(i);
-	cout << "\n\t-+";
+		logger << intToChar(i);
+	logger << "\n\t-+";
 	for (int i = 0; i < WIDTH ; i++)
-		cout << '-';
-	cout << '\n';
+		logger << '-';
+	logger << '\n';
 
 	for (int j = 0; j < HEIGHT ; j++)
 	{
-		cout << "\t" << intToChar(j) << "|";
+		logger << "\t" << intToChar(j) << "|";
 		for (int i = 0; i < WIDTH ; i++)
 		{
 			const auto &l = board.tiles[i][j].letter;
 			if(l)
-				cout << *l;
+				logger << *l;
 			else
-				cout << '.';
+				logger << '.';
 		}
-		cout << "\n";
+		logger << "\n";
 	}
 
 	LOGFL("Letters in the main bag: %s", formatLetters(letters));

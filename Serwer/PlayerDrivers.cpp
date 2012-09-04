@@ -8,10 +8,10 @@ TAction CppDummyPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 	CRules r = *rules;
 	auto printLetters = [](vector<char> &l, int c)
 	{
-		std::cout << "[ " << l[0];
+		logger << "[ " << l[0];
 		for (int j = 1; j < c; ++j) 
-			std::cout << l[j];
-		std::cout << " ]" << std::endl;
+			logger << l[j];
+		logger << " ]" << std::endl;
 	};
 
 	vector<pair<CLetter, Pos> > lettersOnBoard;
@@ -168,6 +168,7 @@ CppDummyPlayer::CppDummyPlayer()
 	playerName = "Dummy C++ player";
 }
 
+
 JavaPlayer::JavaPlayer(string programName) // TODO programName is unused
 	: socket(io)
 {
@@ -182,8 +183,21 @@ JavaPlayer::JavaPlayer(string programName) // TODO programName is unused
 		TAcceptor acceptor(io, TEndpoint(boost::asio::ip::tcp::v4(), portNumber)); //przyjmuje polaczenia
 
 		LOGFL("Listening for TCP connection at port %d...", portNumber);
-		acceptor.accept(socket); //przyjecie polaczenia do socketu
-		LOGFL("TCP connection at port %d has been successfully established!", portNumber);
+
+		{
+			std::ofstream pliczek("./listening");
+		}
+
+
+		int listeningTime = 2000;
+
+		auto watek = boost::thread(&JavaPlayer::przyjmijPolaczenie, this, boost::ref(acceptor), portNumber);
+		if(!watek.timed_join(boost::posix_time::milliseconds(listeningTime)))
+		{
+			LOGFL("Failed to establish connection with player %s. Cannot run game. Ending...", programName);
+			boost::filesystem::remove("./listening");
+			exit(-1);
+		}
 		
 		const char * welcome = "Polaczono z serwerem scrable!";
 		int strSize = strlen(welcome);
@@ -227,6 +241,13 @@ TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 	} CATCH_LOG
 	
 	return act;
+}
+
+void JavaPlayer::przyjmijPolaczenie(TAcceptor &acceptor, int portNumber)
+{
+	acceptor.accept(socket); //przyjecie polaczenia do socketu
+	LOGFL("TCP connection at port %d has been successfully established!", portNumber);
+	boost::filesystem::remove("./listening");
 }
 
 void JavaPlayer::gameFinished()

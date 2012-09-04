@@ -1,7 +1,7 @@
 project(TPServer)
 cmake_minimum_required(VERSION 2.6)
 
-find_package(Boost COMPONENTS program_options filesystem system thread REQUIRED)
+find_package(Boost COMPONENTS program_options filesystem system thread chrono REQUIRED)
 
 # where to look for cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_HOME_DIRECTORY}/cmake_modules )
@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_HOME_DIRECTORY}/cmake_modules )
 set(CMAKE_BUILD_TYPE Debug)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wclobbered -Wempty-body -Wignored-qualifiers -Wmissing-field-initializers -Wsign-compare -Wtype-limits -Wuninitialized")
+    set(CMAKE_CXX_FLAGS "-std=gnu++0x -Wall -Wclobbered -Wempty-body -Wignored-qualifiers -Wmissing-field-initializers -Wsign-compare -Wtype-limits -Wuninitialized")
 endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -35,8 +35,8 @@ if(UNIX)
 
 else(UNIX)
   if(WIN32)
-
+    SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ws2_32 netapi32 wsock32)
   endif(WIN32)
 endif(UNIX)
 
-target_link_libraries(TPServer ${Boost_LIBRARIES})
+target_link_libraries(TPServer ${Boost_LIBRARIES} ${CMAKE_REQUIRED_LIBRARIES})
