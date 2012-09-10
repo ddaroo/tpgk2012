@@ -57,15 +57,23 @@ void CSerwer::run()
 {
 	do
 	{
-		int playerToMove = gs.nextMove();
+		const int playerToMove = gs.nextMove();
+		const CPlayerState &ps = gs.players[playerToMove];
+		if(ps.disqualified)
+		{
+			LOGFL("Ignoring player %d who is disqualified.", playerToMove);
+			continue;
+		}
+
 		try
 		{
 			TAction action;
 			realizeWithTimeLimit(timeLimitForMove, [&]
 			{
 				CHECK_TIME_FORMAT("Player %d was thinking", playerToMove);
-				action = playerDrivers[playerToMove]->takeAction(gs.board, gs.players[playerToMove]);
+				action = playerDrivers[playerToMove]->takeAction(gs.board, ps);
 			});
+			LOGFL("Player %d attempts an action of type %s", playerToMove % action.type().name());
 			gs.applyAction(action);
 		}
 		catch(std::exception &e)
@@ -78,11 +86,12 @@ void CSerwer::run()
 			}
 			else
 			{
-				LOGL("It's unforgivable. The game will end.");
-				disqualifyPlayerAndEnd(playerToMove, string("Unforgivable time limit violation: ") + e.what());
-				throw;
+				LOGL("It's unforgivable. Player will be disqualified.");
+				disqualifyPlayerAndEnd(playerToMove, string("Unforgivable violation: ") + e.what());
 			}
 		}
+
+		gs.handleEndingCondition();
 	} while(!gs.isGameFinished());
 	
 	for(auto it = playerDrivers.begin(); it != playerDrivers.end(); ++it) 
@@ -146,8 +155,10 @@ void CSerwer::disqualifyPlayerAndEnd(int id, string reason /*= ""*/)
 		name = playerNames[id];
 
 	LOGFL("Disqualification! Reason: %s", reason);
-	LOGFL("Player %d is disqualified! Game ends! Shame on %s!", id % name);
-	exit(-1);
+	LOGFL("Player %d is disqualified! Game ends for him! Shame on %s!", id % name);
+
+	gs.players[id].disqualified = true;
+	gs.players[id].disqualificationReason = reason;
 }
 
 CBoard::CBoard()
@@ -456,28 +467,7 @@ int CGameState::nextMove()
 
 bool CGameState::isGameFinished() const
 {
-	bool someoneHadntPassedTwice = false;
-
-	FOREACH(auto &ps, players)
-	{
-		//gra jest skonczona, jesli ktos zuzyl wszystkie litery, a worek jest pusty
-		if(ps.letters.empty() && letters.empty()) 
-		{
-			LOGFL("Game is finished because player %d used all letters and the bag is empty.", ps.ID);
-			return true; 
-		}
-		if(ps.turnsSkipped < 2)
-			someoneHadntPassedTwice = true;
-	}
-	
-	//wszyscy spasowali przynajmniej dwa razy pod rzad, gra skonczona
-	if(!someoneHadntPassedTwice)
-	{
-		LOGL("Game is finished because all players passed two times in a row.");
-		return true;  
-	}
-
-	return false;
+	return result;
 }
 
 //polimorfizm bez polimorfizmu :>
@@ -567,8 +557,11 @@ void CGameState::applyAction(const PutLetters &action)
 	}
 
 	//litery leza na planszy, mozemy naliczac punkty
-
-
+	if(ps.letters.empty())
+	{
+		LOGFL("Awarding player with %d points for using all his letters.", BONUS_FOR_EMPTYING_RACK);
+		ps.points += BONUS_FOR_EMPTYING_RACK;
+	}
 	
 	WordRange mainWord = board.getWordRange(action.letters.front().pos, action.orientation);
 	ps.points += pointsForWord(mainWord); //punkty za "glowne slowo
@@ -874,6 +867,67 @@ int CGameState::pointsForWord(WordRange word) const
 	}
 
 	return pointsAccumulator.totalPoints();
+}
+
+int CGameState::whoHasMostPoints() const
+{
+	auto playersInGame = players;
+	erase_if(playersInGame, [](const CPlayerState &ps) { return ps.disqualified; });
+	if(playersInGame.empty())
+	{
+		return -1;
+	}
+
+	return maxElementByFun(playersInGame, [](const CPlayerState &p) { return p.points; })->ID;
+}
+
+void CGameState::handleEndingCondition()
+{
+	//Check for ending conditions
+	bool someoneHadntPassedTwice = false;
+	bool someoneNotDisqualified = false;
+
+	FOREACH(auto &ps, players)
+	{
+		if(!ps.disqualified)
+			someoneNotDisqualified = true;
+		else
+			continue;
+
+		//gra jest skonczona, jesli ktos zuzyl wszystkie litery, a worek jest pusty
+		if(ps.letters.empty() && letters.empty()) 
+		{
+			finishGame(whoHasMostPoints(), str(format("Game is finished because player %d used all letters and the bag is empty.") % ps.ID));
+			return;
+		}
+		if(ps.turnsSkipped < 2)
+			someoneHadntPassedTwice = true;
+	}
+
+	//wszyscy spasowali przynajmniej dwa razy pod rzad, gra skonczona
+	if(!someoneHadntPassedTwice)
+	{
+		finishGame(whoHasMostPoints(), "Game is finished because all players passed two times in a row.");
+		return;
+	}
+	if(!someoneNotDisqualified)
+	{
+		finishGame(-1, "All players disqualified!");
+		return;
+	}
+}
+
+void CGameState::finishGame(int winner, string comment)
+{
+	LOGFL("Finishing game. The winner is player %d. Ending reson: %s", winner % comment);
+	result = GameResult();
+	result->victor = winner;
+	result->comment = comment;
+
+	for(int i = 0; i < players.size(); i++)
+		if(players[i].disqualified)
+			comment += str(format("\tplayer %d was disqualified because %s") % i % players[i].disqualificationReason);
+
 }
 
 void CPlayerState::writeData(boost::asio::ip::tcp::socket& sock) const

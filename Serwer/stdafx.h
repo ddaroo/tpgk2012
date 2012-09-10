@@ -122,6 +122,24 @@ namespace vstd
 		return std::find(b, e, i) != e;
 	}
 
+	//returns true if container c contains item i
+	template <typename Container, typename Pred>
+	bool contains_if(const Container & c, Pred p)
+	{
+		return std::find_if(boost::begin(c), boost::end(c), p) != boost::end(c);
+	}
+
+	//Returns iterator to the element for which the value of ValueFunction is maximal
+	template<class ForwardRange, class ValueFunction>
+	auto maxElementByFun(const ForwardRange& rng, ValueFunction vf) -> decltype(boost::begin(rng))
+	{
+		typedef decltype(*boost::begin(rng)) ElemType;
+		return boost::max_element(rng, [&] (ElemType lhs, ElemType rhs) -> bool
+		{
+			return vf(lhs) < vf(rhs);
+		});
+	}
+
 	//removes element i from container c, returns false if c does not contain i
 	template <typename Container, typename Item>
 	typename Container::size_type operator-=(Container &c, const Item &i)
@@ -193,6 +211,12 @@ namespace vstd
 		delete ptr;
 		ptr = NULL;
 	}
+
+	template<typename Range, typename Predicate>
+	void erase_if(Range &vec, Predicate pred)
+	{
+		vec.erase(boost::remove_if(vec, pred),vec.end());
+	}
 }
 using namespace vstd;
 
@@ -205,6 +229,7 @@ const int LETTERS_RECEIVED_AT_START = 7;
 const int PLAYER_COUNT = 4;
 const int WIDTH = 15, HEIGHT = 15; //wymiary planszy
 const int EXCHANGES_ALLOWED = 3; //trzy razy na gre mozna wymieniac litery
+const int BONUS_FOR_EMPTYING_RACK = 50; //punkty za uzycie wszystkich liter
 
 typedef char CLetter;
 const CLetter BLANK = '_';

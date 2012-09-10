@@ -4,6 +4,7 @@
 #include "Serwer.h"
 #include "StopWatch.h"
 #include "Dictionary.h"
+#include "PlayerDrivers.h"
 
 po::variables_map vm; //tu trzymamy parametry przekazane w linii komend
 vector<string> playerNames;
@@ -115,12 +116,33 @@ int main(int argc, char *argv[])
 		CStopWatch csw;
 		s.run();
 
-		if(vm.count("name0"))
+		if(vm.count("names"))
 		{
 			ofstream wyniki("wielkiArkuszWynikow.txt", ios::app);
-			wyniki << vm["name0"].as<string>() << "\t" << logger.fname << "\t";
+			wyniki << s.gs.players.size() << "\t";
+
+			wyniki << "|||\t";
+
+			//BOOST_FOREACH(auto &pd, s.playerDrivers)
+			//	wyniki << pd.second->playerName << "\t";
+			BOOST_FOREACH(string name, playerNames)
+				wyniki << name << "\t";
+
+			wyniki << "|||\t";
+
 			for(int i = 0; i < s.gs.players.size(); i++)
 				wyniki << s.gs.players[i].points << "\t";
+
+			wyniki << "|||\t";
+			wyniki << s.gs.result->victor << "\t" << s.gs.result->comment << "\t";
+			wyniki << "|||\t";
+			BOOST_FOREACH(auto &pd, s.playerDrivers)
+				wyniki << pd.second->playerName << "\t";
+			wyniki << "|||\t";
+			for(int i = 0; i < s.gs.players.size(); i++)
+				if(s.gs.players[i].disqualified)
+					wyniki << playerNames[i] << " was disqualified: " << s.gs.players[i].disqualificationReason << "\t";
+			wyniki << "|||\t";
 			wyniki << csw.getDiff() << endl;
 		}
 	} CATCH_LOG

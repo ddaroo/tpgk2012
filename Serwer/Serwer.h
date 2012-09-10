@@ -64,6 +64,8 @@ struct CPlayerState
 	int ID;
 	int points; //liczba zdobytych do tej pory punktow
 	vector<CLetter> letters; //stojak z literkami
+	bool disqualified;
+	string disqualificationReason;
 
 	CPlayerState(int _ID)
 	{
@@ -71,6 +73,7 @@ struct CPlayerState
 		turnsSkipped = 0;
 		ID = _ID;
 		points = 0;
+		disqualified = false;
 	}
 	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
@@ -85,6 +88,12 @@ struct CRules
 	void writeData(boost::asio::ip::tcp::socket& sock) const;
 };
 
+struct GameResult
+{
+	int victor;
+	string comment;
+};
+
 struct CGameState : boost::noncopyable
 {
 	int turn; //from 0, -1 before game start
@@ -93,6 +102,8 @@ struct CGameState : boost::noncopyable
 	vector<CLetter> letters; //worek z literkami
 	vector<CPlayerState> players;
 	CRules rules;
+
+	boost::optional<GameResult> result;
 
 	void createLetters();
 	void addNewPlayer();
@@ -115,6 +126,9 @@ struct CGameState : boost::noncopyable
 	int pointsForWord(WordRange word) const;
 
 	bool isGameFinished() const;
+	int whoHasMostPoints() const; //returns player id
+	void handleEndingCondition();
+	void finishGame(int winner, string comment);
 
 	CGameState();
 };
