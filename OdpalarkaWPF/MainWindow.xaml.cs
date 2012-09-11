@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.Diagnostics;
 using System.Threading;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Odpalarka
 {
@@ -25,6 +26,11 @@ namespace Odpalarka
 		public static string serverDictioanry = @"T:\Scrabble_github\Serwer\dict.txt";
 		public static string playersDirectory = @"T:\gracze";
 		public static string javaExe = @"C:\Program Files (x86)\Java\jre7\bin\java.exe";
+
+		public static string wyniki1 = @"T:\Scrabble_github\Serwer\WynikiFaza1.txt";
+		public static string wyniki2 = @"T:\Scrabble_github\Serwer\WynikiFaza2.txt";
+
+		public static Dictionary<string, string> jarToPath = new Dictionary<string, string>();
 	}
 
 	static class CombinationExt
@@ -49,11 +55,13 @@ namespace Odpalarka
 			return Process.Start(psi);
 		}
 
-		public static Process startServer(int port, string names)
+		public static Process startServer(int port, string names, string arkuszWyn ="")
 		{
 			Trace.Assert(System.IO.File.Exists(Paths.serverExe));
 
 			string serverArgs = @"-d" + Paths.serverDictioanry + " -c2 -p2 --names=" + names;
+			if (arkuszWyn.Length > 0)
+				serverArgs += " --results=" + arkuszWyn;
 
 			ProcessStartInfo psi = new ProcessStartInfo(Paths.serverExe, serverArgs);
 			psi.WorkingDirectory = Paths.serverDirectory;
@@ -108,7 +116,7 @@ namespace Odpalarka
 			public List<PlayerInfo> players;
 
 
-			public void rozegraj()
+			public void rozegraj(string wyniki = "")
 			{
 				Stopwatch sw = new Stopwatch();
 				sw.Start();
@@ -117,7 +125,7 @@ namespace Odpalarka
 				for (int i = 1; i < players.Count; i++)
 					names += "," + players[1].jarname;
 
-				Process serv = Helpers.startServer(defaultPort, names);
+				Process serv = Helpers.startServer(defaultPort, names, wyniki);
 
 				foreach (PlayerInfo gracz in players)
 				{
@@ -228,13 +236,59 @@ namespace Odpalarka
 					if (file.EndsWith("jar"))
 						programy.Add(new PlayerInfo(file));
 
+			foreach (PlayerInfo p in programy)
+			{
+				Paths.jarToPath.Add(p.jarname, p.fullpathToJar());
+			}
+
 			return programy;
 		}
 
-
-		void oficjalnyTurniej()
+		class StatystykiGracza
 		{
-			List<PlayerInfo> gracze = scanForPlayers();
+			public int ileZwyciestw;
+			public int ileMeczy;
+			public int punktyRazem;
+			public string nazwa;
+		}
+
+		Dictionary<string, StatystykiGracza> zbierzWyniki(string fname)
+		{
+			Dictionary<string, StatystykiGracza> wyniki = new Dictionary<string, StatystykiGracza>();
+			
+			StreamReader sr = new StreamReader(fname);
+			while (!sr.EndOfStream)
+			{
+				string line = sr.ReadLine();
+				string[] pola = line.Split('\t');
+
+				for (int i = 0; i < 2; i++)
+				{
+					string name = pola[3+i];
+					StatystykiGracza stat;
+					if (wyniki.ContainsKey(name))
+						stat = wyniki[name];
+					else
+					{
+						stat = new StatystykiGracza();
+						stat.nazwa = name;
+						wyniki.Add(name, stat);
+					}
+
+					if (i == int.Parse(pola[9]))
+						stat.ileZwyciestw++;
+
+					stat.ileMeczy++;
+					stat.punktyRazem += int.Parse(pola[6 + i]);
+				}
+			}
+			sr.Close();
+
+			return wyniki;
+		}
+
+		void rozegrajFazeTurnieju(List<PlayerInfo> gracze, string arkuszWynikow)
+		{
 			var pary = gracze.Combinations(2);
 
 			List<Pojedynek> pojedynki = new List<Pojedynek>();
@@ -244,28 +298,64 @@ namespace Odpalarka
 				Pojedynek p = new Pojedynek();
 				p.players = new List<PlayerInfo>();
 
-				foreach(var gracz in para)
+				foreach (var gracz in para)
 				{
 					p.players.Add(gracz);
 					System.Console.Write(gracz.jarname + "\t");
 				}
-				
+
 				pojedynki.Add(p);
 				System.Console.WriteLine();
 			}
 
 			foreach (Pojedynek p in pojedynki)
 			{
-				p.rozegraj();
+				p.rozegraj(arkuszWynikow);
 				p.players.Reverse();
-				p.rozegraj();
+				p.rozegraj(arkuszWynikow);
 			}
+		}
+
+		List<StatystykiGracza> zrobRanking(Dictionary<string, StatystykiGracza> wyniki)
+		{
+			List<StatystykiGracza> ranking = new List<StatystykiGracza>(wyniki.Values);
+			ranking.Sort((a, b) => a.ileZwyciestw.CompareTo(b.ileZwyciestw));
+			ranking.Reverse();
+			return ranking;
+		}
+
+		void WypiszWyniki(List<StatystykiGracza> ranking, string plik)
+		{
+			StreamWriter w = new StreamWriter(plik);
+
+			foreach (StatystykiGracza g in ranking)
+			{
+				w.WriteLine(g.nazwa + "\t" + g.ileZwyciestw + "\t" + g.punktyRazem);
+			}
+
+			w.Close();
+		}
+
+		void oficjalnyTurniej()
+		{
+			rozegrajFazeTurnieju(scanForPlayers(), Paths.wyniki1);
+			Dictionary<string, StatystykiGracza> wyniki = zbierzWyniki(Paths.wyniki1);
+			List<StatystykiGracza> ranking = zrobRanking(wyniki);
+			WypiszWyniki(ranking, Paths.serverDirectory + "WynikiPierwszejFazy.txt");
+
+			List<PlayerInfo> drugaFaza = new List<PlayerInfo>();
+			for (int i = 0; i < Math.Min(18, ranking.Count); i++)
+				drugaFaza.Add(new PlayerInfo(Paths.jarToPath[ranking[i].nazwa]));
+
+			rozegrajFazeTurnieju(drugaFaza, Paths.wyniki2);
+			WypiszWyniki(zrobRanking(zbierzWyniki(Paths.wyniki2)), Paths.serverDirectory + "WynikiDrugiejFazy.txt");
 		}
 
 		private void Window_Loaded_1(object sender, RoutedEventArgs e)
 		{
+			//zbierzWyniki(Paths.serverDirectory + "wielkiArkuszWynikow.txt");
 			oficjalnyTurniej();
-
+			return;
  			//przerob();
  			//return;
 
