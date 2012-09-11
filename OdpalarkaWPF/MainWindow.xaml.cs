@@ -18,16 +18,63 @@ using System.IO;
 
 namespace Odpalarka
 {
+	static class Paths
+	{
+		public static string serverDirectory = @"T:\Scrabble_github\Serwer\";
+		public static string serverExe = @"T:\Scrabble_github\Serwer\Serwer.exe";
+		public static string serverDictioanry = @"T:\Scrabble_github\Serwer\dict.txt";
+		public static string playersDirectory = @"T:\gracze";
+		public static string javaExe = @"C:\Program Files (x86)\Java\jre7\bin\java.exe";
+	}
+
+	static class CombinationExt
+	{
+		//za http://stackoverflow.com/a/1898744
+		public static IEnumerable<IEnumerable<T>> Combinations<T>(this IEnumerable<T> elements, int k)
+		{
+			return k == 0 ? new[] { new T[0] } :
+			  elements.SelectMany((e, i) =>
+				elements.Skip(i + 1).Combinations(k - 1).Select(c => (new[] { e }).Concat(c)));
+		}
+	}
+
+	static class Helpers
+	{
+		public static Process startProcess(ProcessStartInfo psi)
+		{
+			System.Console.WriteLine("Odpalam " + psi.FileName + " z argumentami " + psi.Arguments);
+			// 				psi.RedirectStandardError = true;
+			// 				psi.RedirectStandardOutput = true;
+			psi.UseShellExecute = false;
+			return Process.Start(psi);
+		}
+
+		public static Process startServer(int port, string names)
+		{
+			Trace.Assert(System.IO.File.Exists(Paths.serverExe));
+
+			string serverArgs = @"-d" + Paths.serverDictioanry + " -c2 -p2 --names=" + names;
+
+			ProcessStartInfo psi = new ProcessStartInfo(Paths.serverExe, serverArgs);
+			psi.WorkingDirectory = Paths.serverDirectory;
+			return Helpers.startProcess(psi);
+		}
+
+		public static void zaczekajAzSlucha()
+		{
+			System.Console.WriteLine("Czekam na serwer...");
+			while (!File.Exists(Paths.serverDirectory + "listening"))
+				Thread.Sleep(5);
+
+			System.Console.WriteLine("Serwer slucha");
+		}
+	}
+
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		static string serverDirectory = @"T:\Scrabble_github\Serwer\";
-		static string serverExe = @"T:\Scrabble_github\Serwer\Serwer.exe";
-		static string serverDictioanry = @"T:\Scrabble_github\Serwer\dict.txt";
-		static string playersDirectory = @"T:\gracze";
-		static string javaExe = @"C:\Program Files (x86)\Java\jre7\bin\java.exe";
 
 
 		static string tournamentDir = @"T:\turniej\";
@@ -37,58 +84,55 @@ namespace Odpalarka
 		{
 			public PlayerInfo gracz;
 
-			Process startProcess(ProcessStartInfo psi)
-			{
-				System.Console.WriteLine("Odpalam " + psi.FileName + " z argumentami " + psi.Arguments);
-// 				psi.RedirectStandardError = true;
-// 				psi.RedirectStandardOutput = true;
- 				psi.UseShellExecute = false;
-				return Process.Start(psi);
-			}
 
-			Process startPlayer(PlayerInfo pi, int port)
-			{
-				string javaArgs = @"-Xmx50m -jar " + pi.fullpathToJar() + " " + port.ToString() + " " + @"T:\dict.txt";
-
-				ProcessStartInfo pgi = new ProcessStartInfo(javaExe, javaArgs);
-				pgi.WorkingDirectory = pi.dir;
-				return startProcess(pgi);
-			}
-
-			Process startServer(int port)
-			{
-				Trace.Assert(System.IO.File.Exists(serverExe));
-
-				string serverArgs = @"-d" + serverDictioanry + " --names=" + gracz.jarname;
-
-				ProcessStartInfo psi = new ProcessStartInfo(serverExe, serverArgs);
-				psi.WorkingDirectory = serverDirectory;
-				return startProcess(psi);
-			}
-
-			void zaczekajAzSlucha()
-			{
-				System.Console.WriteLine("Czekam na serwer...");
-				while (!File.Exists(serverDirectory + "listening"))
-					Thread.Sleep(5);
-
-				System.Console.WriteLine("Serwer slucha");
-			}
 
 			public void rozegraj()
 			{
 				Stopwatch sw = new Stopwatch();
 				sw.Start();
-				Process serv = startServer(defaultPort);
-				zaczekajAzSlucha();
+				Process serv = Helpers.startServer(defaultPort, gracz.jarname);
+				Helpers.zaczekajAzSlucha();
 
-				Process play = startPlayer(gracz, defaultPort);
+				Process play = gracz.startPlayer(defaultPort);
 				serv.WaitForExit();
 				//play.WaitForExit();
 
 // 				System.Console.WriteLine(play.StandardOutput.ReadToEnd());
 // 				System.Console.WriteLine(play.StandardError.ReadToEnd());
 // 				System.Console.WriteLine(sw.Elapsed.ToString());
+			}
+		}
+
+		struct Pojedynek
+		{
+			public List<PlayerInfo> players;
+
+
+			public void rozegraj()
+			{
+				Stopwatch sw = new Stopwatch();
+				sw.Start();
+
+				string names = players[0].jarname;
+				for (int i = 1; i < players.Count; i++)
+					names += "," + players[1].jarname;
+
+				Process serv = Helpers.startServer(defaultPort, names);
+
+				foreach (PlayerInfo gracz in players)
+				{
+					Helpers.zaczekajAzSlucha();
+					Process play = gracz.startPlayer(defaultPort);
+					Thread.Sleep(500);
+				}
+
+				serv.WaitForExit();
+
+				//play.WaitForExit();
+
+				// 				System.Console.WriteLine(play.StandardOutput.ReadToEnd());
+				// 				System.Console.WriteLine(play.StandardError.ReadToEnd());
+				// 				System.Console.WriteLine(sw.Elapsed.ToString());
 			}
 		}
 
@@ -114,6 +158,15 @@ namespace Odpalarka
 			{
 				return dir + "\\" + jarname;
 			}
+
+			public Process startPlayer(int port)
+			{
+				string javaArgs = @"-Xmx50m -jar " + fullpathToJar() + " " + port.ToString() + " " + @"T:\dict.txt";
+
+				ProcessStartInfo pgi = new ProcessStartInfo(Paths.javaExe, javaArgs);
+				pgi.WorkingDirectory = dir;
+				return Helpers.startProcess(pgi);
+			}
 		}
 
 		public MainWindow()
@@ -133,7 +186,7 @@ namespace Odpalarka
 		{
 			Dictionary<string, List<int> > wyniki = new Dictionary<string, List<int> >();
 
-			string arkusz = serverDirectory + "wielkiArkuszWynikow.txt";
+			string arkusz = Paths.serverDirectory + "wielkiArkuszWynikow.txt";
 			StreamReader sr = new StreamReader(arkusz);
 			while (!sr.EndOfStream)
 			{
@@ -151,7 +204,7 @@ namespace Odpalarka
 			}
 			sr.Close();
 
-			StreamWriter moje = new StreamWriter(serverDirectory + "Wyniki.txt");
+			StreamWriter moje = new StreamWriter(Paths.serverDirectory + "Wyniki.txt");
 			foreach (var t in wyniki)
 			{
 				moje.Write(t.Key + '\t');
@@ -167,13 +220,57 @@ namespace Odpalarka
 			moje.Close();
 		}
 
+		List<PlayerInfo> scanForPlayers()
+		{
+			List<PlayerInfo> programy = new List<PlayerInfo>();
+			foreach (string dir in Directory.EnumerateDirectories(Paths.playersDirectory))
+				foreach (string file in Directory.EnumerateFiles(dir))
+					if (file.EndsWith("jar"))
+						programy.Add(new PlayerInfo(file));
+
+			return programy;
+		}
+
+
+		void oficjalnyTurniej()
+		{
+			List<PlayerInfo> gracze = scanForPlayers();
+			var pary = gracze.Combinations(2);
+
+			List<Pojedynek> pojedynki = new List<Pojedynek>();
+
+			foreach (var para in pary)
+			{
+				Pojedynek p = new Pojedynek();
+				p.players = new List<PlayerInfo>();
+
+				foreach(var gracz in para)
+				{
+					p.players.Add(gracz);
+					System.Console.Write(gracz.jarname + "\t");
+				}
+				
+				pojedynki.Add(p);
+				System.Console.WriteLine();
+			}
+
+			foreach (Pojedynek p in pojedynki)
+			{
+				p.rozegraj();
+				p.players.Reverse();
+				p.rozegraj();
+			}
+		}
+
 		private void Window_Loaded_1(object sender, RoutedEventArgs e)
 		{
+			oficjalnyTurniej();
+
  			//przerob();
  			//return;
 
 			List<string> programy = new List<string>();
-			foreach(string dir in Directory.EnumerateDirectories(playersDirectory))
+			foreach(string dir in Directory.EnumerateDirectories(Paths.playersDirectory))
 			{
 				foreach (string file in Directory.EnumerateFiles(dir))
 				{
