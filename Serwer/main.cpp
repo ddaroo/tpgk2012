@@ -11,7 +11,8 @@ vector<string> playerNames;
 
 Logger logger;
 
-const std::string DEF_RECORD = "./DD_MM_RR_HH_MM_SS_PLAYERS.txt";
+const std::string DEF_RECORD = "./logs/RRRR-MM-RR_HH-MM-SS_PLAYERS.txt";
+const std::string DEF_RESULTS = "./wielkiArkuszWynikow.txt";
 
 void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 {
@@ -26,7 +27,8 @@ void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 		("connections,c",po::value<unsigned>()->default_value(1), "number of socket-connected players to be expected")
 		("moveTime", po::value<unsigned>()->default_value(15000), "time in milliseconds for player to make his move; 0 disables checking")
 		("initTime", po::value<unsigned>()->default_value(30000), "time in milliseconds for player to initialize; 0 disables checking")
-		("record,r", po::value<std::string>()->default_value(DEF_RECORD), "file with logs.")
+		("record", po::value<std::string>()->default_value(DEF_RECORD), "file with logs.")
+		("results", po::value<std::string>()->default_value(DEF_RESULTS), "file with results list.")
 		("lenient,l", "when player takes an illegal action, server complains but doesn't end the game");
 	po::store(po::parse_command_line(argc, argv, opts), vm);
 	po::notify(vm);
@@ -52,8 +54,8 @@ void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 		string no = lexical_cast<string>(i);
 		if(i >= playerNames.size())
 			playerNames.push_back("Player nr " + no);
-		else
-			playerNames[i] += " (player " + no + ")";
+// 		else
+// 			playerNames[i] += " (player " + no + ")";
 	}
 
 	string logname = vm["record"].as<string>();
@@ -64,9 +66,10 @@ void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 		epoch_time = time( NULL );
 		tm_p = localtime( &epoch_time );
 
-		string logdir = str(format("./logs_%s/") % playerNamesForLog);
-		boost::filesystem::create_directory(logdir);
-		logname = logdir + str(format("%02d.%02d.%02d_%02d-%02d-%02d.log") % tm_p->tm_mday % tm_p->tm_mon % (tm_p->tm_year - 100) % tm_p->tm_hour % tm_p->tm_min % tm_p->tm_sec);
+		//string logdir = str(format("./logs_%s/") % playerNamesForLog);
+		boost::filesystem::create_directory("./logs");
+		logname = str(format("./logs/%04d-%02d-%02d_%02d-%02d-%02d_%s.log") % (tm_p->tm_year - 100+2000) 
+			% tm_p->tm_mon % tm_p->tm_mday % tm_p->tm_hour % tm_p->tm_min % tm_p->tm_sec % playerNamesForLog);
 		//logname = "./testtt";
 	}
 
@@ -116,10 +119,10 @@ int main(int argc, char *argv[])
 		CStopWatch csw;
 		s.run();
 
-		if(vm.count("names"))
+		if(vm.count("names") && vm.count("results"))
 		{
-			ofstream wyniki("wielkiArkuszWynikow.txt", ios::app);
-			wyniki << s.gs.players.size() << "\t";
+			ofstream wyniki(vm["results"].as<string>(), ios::app);
+			wyniki << s.gs.players.size() << "\t" << logger.fname << "\t";
 
 			wyniki << "|||\t";
 
