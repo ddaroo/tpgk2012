@@ -163,7 +163,7 @@ public:
 	void run();
 	void realizeWithTimeLimit(boost::optional<int> timeLimit, function<void()> action);
 
-	void disqualifyPlayerAndEnd(int id, string reason = "");
+	void disqualifyPlayer(int id, string reason = "");
 };
 
 

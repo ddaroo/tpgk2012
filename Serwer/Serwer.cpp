@@ -93,7 +93,7 @@ void CSerwer::run()
 			else
 			{
 				LOGL("It's unforgivable. Player will be disqualified.");
-				disqualifyPlayerAndEnd(playerToMove, string("Unforgivable violation: ") + e.what());
+				disqualifyPlayer(playerToMove, string("Unforgivable violation: ") + e.what());
 			}
 		}
 
@@ -146,7 +146,9 @@ void CSerwer::realizeWithTimeLimit(boost::optional<int> timeLimit, function<void
 			//watek sie nie skonczyl mimo dlugiego czekania
 			LOGFL("We've been waiting for %d ms (while the limit was %d) but the program is still not responding. Totally unacceptable! Server will close.", mainThreadWatch.getDiff() % limitInMs);
 			logger << flush;
-			exit(-1);
+			disqualifyPlayer(gs.activePlayer, "Unforgivable time limit violation!");
+			throw std::runtime_error("Player did not give any answer");
+			//exit(-1);
 		}
 
 		if(timeLimitExceeded)
@@ -154,7 +156,7 @@ void CSerwer::realizeWithTimeLimit(boost::optional<int> timeLimit, function<void
 	}
 }
 
-void CSerwer::disqualifyPlayerAndEnd(int id, string reason /*= ""*/)
+void CSerwer::disqualifyPlayer(int id, string reason /*= ""*/)
 {
 	string name;
 	if(playerDrivers.count(id))
