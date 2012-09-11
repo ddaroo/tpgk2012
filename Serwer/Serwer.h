@@ -14,11 +14,13 @@ struct CTile
 	{
 		enum EBonusType {NONE = 0, LETTER, WORD} multiplicatorType; //czy mnoznik jest do litery czy do calego slowa
 		int multiplicatorValue; //ilokrotny mnoznik
+		bool usedUp;
 
 		Bonus(EBonusType type = NONE, int value = 0)
 		{
 			multiplicatorType = type;
 			multiplicatorValue = value;
+			usedUp = false;
 		}
 	} bonus;
 

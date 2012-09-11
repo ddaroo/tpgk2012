@@ -517,16 +517,19 @@ public:
 
 		int multiplierForThisLetter = 1;
 
-		switch(t.bonus.multiplicatorType)
+		if(!t.bonus.usedUp)
 		{
-		case CTile::Bonus::WORD:
-			wordPointsMultiplier += t.bonus.multiplicatorValue;
-			break;
-		case CTile::Bonus::LETTER:
-			multiplierForThisLetter += t.bonus.multiplicatorValue;
-			break;
-		default:
-			break;
+			switch(t.bonus.multiplicatorType)
+			{
+			case CTile::Bonus::WORD:
+				wordPointsMultiplier += t.bonus.multiplicatorValue;
+				break;
+			case CTile::Bonus::LETTER:
+				multiplierForThisLetter += t.bonus.multiplicatorValue;
+				break;
+			default:
+				break;
+			}
 		}
 
 		pointsForLetters += multiplierForThisLetter * basicLetterValue;
@@ -577,6 +580,18 @@ void CGameState::applyAction(const PutLetters &action)
 			 LOGFL("Awarding player with %d points for perpendicular word: \"%s\"", pointsForWord(perpendicularWord) % board.readWord(perpendicularWord.first, forwardDirection(perpendicularWord.getOrientation())));
 		 }
 	 }
+
+	 //wykladamy litery
+	 FOREACH(auto &pl, action.letters)
+	 {
+		 auto &t = board.tile(pl.pos);
+		 if(t.bonus.multiplicatorType != CTile::Bonus::NONE)
+		 {
+			 LOGFL("The bonus on tile %s has been used up.", pl.pos);
+			 t.bonus.usedUp = true;
+		 }
+	 }
+
 
 	//dobierz liter, zeby miec tyle, ile na starcie
 	drawLetters(ps);
