@@ -76,6 +76,12 @@ void CSerwer::run()
 			LOGFL("Player %d attempts an action of type %s", playerToMove % action.type().name());
 			gs.applyAction(action);
 		}
+		catch(TimeLimitExceededException &tlee)
+		{
+			LOGFL("Player %d violated time limit: %s.", playerToMove % tlee.what());
+			LOGFL("Because violation isn't grave, it will be forgiven. Player %d loses turn.", playerToMove);
+			gs.applyAction(SkipTurn());
+		}
 		catch(std::exception &e)
 		{
 			LOGFL("Encountered an exception during player %d turn: %s", playerToMove % e.what());
@@ -118,11 +124,13 @@ void CSerwer::realizeWithTimeLimit(boost::optional<int> timeLimit, function<void
 	{
 		bool timeLimitExceeded = false;
 		int limitInMs = *timeLimit;
+		int timePassed = -1;
+
 		boost::thread t([&]() -> bool
 		{
 			CStopWatch timer;
 			action();
-			auto timePassed = timer.getDiff();
+			timePassed = timer.getDiff();
 			if(timePassed > limitInMs)
 			{
 				LOGFL("Time limit exceeded: used time was %d ms while the limit was %d ms!", timePassed % limitInMs);
@@ -142,7 +150,7 @@ void CSerwer::realizeWithTimeLimit(boost::optional<int> timeLimit, function<void
 		}
 
 		if(timeLimitExceeded)
-			throw std::runtime_error("Time limit has been exceeded!");
+			throw TimeLimitExceededException(limitInMs, timePassed);
 	}
 }
 

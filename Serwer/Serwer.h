@@ -4,6 +4,19 @@
 
 struct IPlayerDriver;
 
+class TimeLimitExceededException : public runtime_error
+{
+public:
+	TimeLimitExceededException(int Limit, int UsedTime) 
+		: runtime_error(str(format("Time limit was %d, program used %d") % Limit % UsedTime))
+	{
+		limit = Limit;
+		usedTime = UsedTime;
+	}
+	
+	int limit, usedTime;
+};
+
 struct CTile
 {
 	Pos pos;
