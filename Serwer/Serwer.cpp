@@ -70,8 +70,15 @@ void CSerwer::run()
 			TAction action;
 			realizeWithTimeLimit(timeLimitForMove, [&]
 			{
-				CHECK_TIME_FORMAT("Player %d was thinking", playerToMove);
-				action = playerDrivers[playerToMove]->takeAction(gs.board, ps);
+				try
+				{
+					CHECK_TIME_FORMAT("Player %d was thinking", playerToMove);
+					action = playerDrivers[playerToMove]->takeAction(gs.board, ps);
+				}
+				catch(std::exception &e)
+				{
+					disqualifyPlayer(playerToMove, e.what());
+				}
 			});
 			LOGFL("Player %d attempts an action of type %s", playerToMove % action.type().name());
 			gs.applyAction(action);
@@ -102,7 +109,14 @@ void CSerwer::run()
 	
 	for(auto it = playerDrivers.begin(); it != playerDrivers.end(); ++it) 
 	{
-		(*it).second->gameFinished();
+		try
+		{
+			(*it).second->gameFinished();
+		}
+		catch(std::exception &e)
+		{
+			LOGFL("Player %d failed to handle ending of the game: %s", it->first % e.what());
+		}
 	}
 
 	LOGL("Game results:");

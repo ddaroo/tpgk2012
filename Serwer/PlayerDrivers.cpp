@@ -238,7 +238,12 @@ TAction JavaPlayer::takeAction(const CBoard &b, const CPlayerState &ps)
 		default:
 			LOGL("Connection problems with Java player"); // cos sie rozjechalo :(
 		}
-	} CATCH_LOG
+	}
+	catch(std::exception &e)
+	{
+		LOGFL("Encountered an exception when listening for action of player %d: %s", playerID % e.what());
+		throw std::runtime_error("Exception when listening to answer. Player crashed or violated protocol!");
+	}
 	
 	return act;
 }
