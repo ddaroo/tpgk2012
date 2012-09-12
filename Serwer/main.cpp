@@ -19,7 +19,7 @@ void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 	CHECK_TIME("Parsing starting parameters");
 	po::options_description opts("Allowed options");
 	opts.add_options()
-		("names", po::value<std::string>(), "comma separated names of player (0 or more) N0,N1,...")
+		("names", po::value<std::string>()->default_value(""), "comma separated names of player (0 or more) N0,N1,...")
 		("seed,s", po::value<unsigned>()->default_value(0), "seed for random number generator")
 		("help,h", "display help and exit")
 		("dictionary,d",po::value<std::string>()->default_value("./dict.txt"), "file with dictionary")
