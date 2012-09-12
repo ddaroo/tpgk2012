@@ -27,9 +27,10 @@ void handleStartingParameters(int argc, char *argv[], po::variables_map &vm)
 		("connections,c",po::value<unsigned>()->default_value(1), "number of socket-connected players to be expected")
 		("moveTime", po::value<unsigned>()->default_value(15000), "time in milliseconds for player to make his move; 0 disables checking")
 		("initTime", po::value<unsigned>()->default_value(30000), "time in milliseconds for player to initialize; 0 disables checking")
+		("listeningTime", po::value<unsigned>()->default_value(2000), "time in milliseconds for server to listen for connection")
 		("record", po::value<std::string>()->default_value(DEF_RECORD), "file with logs.")
 		("results", po::value<std::string>()->default_value(DEF_RESULTS), "file with results list.")
-		("lenient,l", "when player takes an illegal action, server complains but doesn't end the game");
+		("lenient", "when player takes an illegal action, server complains but doesn't end the game");
 	po::store(po::parse_command_line(argc, argv, opts), vm);
 	po::notify(vm);
 

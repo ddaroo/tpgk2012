@@ -189,10 +189,8 @@ JavaPlayer::JavaPlayer(string programName) // TODO programName is unused
 		}
 
 
-		int listeningTime = 2000;
-
 		auto watek = boost::thread(&JavaPlayer::przyjmijPolaczenie, this, boost::ref(acceptor), portNumber);
-		if(!watek.timed_join(boost::posix_time::milliseconds(listeningTime)))
+		if(!watek.timed_join(boost::posix_time::milliseconds(vm["listeningTime"].as<unsigned>())))
 		{
 			LOGFL("Failed to establish connection with player %s. Cannot run game. Ending...", programName);
 			boost::filesystem::remove("./listening");
