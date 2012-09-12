@@ -249,7 +249,17 @@ namespace Odpalarka
 			public int ileZwyciestw;
 			public int ileMeczy;
 			public int punktyRazem;
+			public int ileDyskwalifikacji;
 			public string nazwa;
+
+			internal void Dodaj(StatystykiGracza statystykiGracza)
+			{
+				Trace.Assert(nazwa == statystykiGracza.nazwa);
+				ileMeczy += statystykiGracza.ileMeczy;
+				ileZwyciestw += statystykiGracza.ileZwyciestw;
+				punktyRazem += statystykiGracza.punktyRazem;
+				ileDyskwalifikacji += statystykiGracza.ileDyskwalifikacji;
+			}
 		}
 
 		Dictionary<string, StatystykiGracza> zbierzWyniki(string fname)
@@ -280,6 +290,9 @@ namespace Odpalarka
 
 					stat.ileMeczy++;
 					stat.punktyRazem += int.Parse(pola[6 + i]);
+
+					if (line.Contains(name + " was disqualified"))
+						stat.ileDyskwalifikacji++;
 				}
 			}
 			sr.Close();
@@ -319,9 +332,7 @@ namespace Odpalarka
 		List<StatystykiGracza> zrobRanking(Dictionary<string, StatystykiGracza> wyniki)
 		{
 			List<StatystykiGracza> ranking = new List<StatystykiGracza>(wyniki.Values);
-			ranking.Sort((a, b) => a.ileZwyciestw.CompareTo(b.ileZwyciestw));
-			ranking.Reverse();
-			return ranking;
+			return new List<StatystykiGracza>(ranking.OrderByDescending(a => a.punktyRazem).OrderByDescending(a => a.ileZwyciestw));
 		}
 
 		void WypiszWyniki(List<StatystykiGracza> ranking, string plik)
@@ -330,7 +341,19 @@ namespace Odpalarka
 
 			foreach (StatystykiGracza g in ranking)
 			{
-				w.WriteLine(g.nazwa + "\t" + g.ileZwyciestw + "\t" + g.punktyRazem);
+				string hlp = g.nazwa.Replace(".jar", "");
+				string imie = "", nazwisko = "";
+
+				for (int i = 1; i < hlp.Length; i++ )
+					if (Char.IsUpper(hlp[i]))
+					{
+						nazwisko = hlp.Substring(0, i);
+						imie = hlp.Substring(i);
+					}
+
+
+
+				w.WriteLine(nazwisko + "\t" + imie + "\t" + g.ileZwyciestw + "\t" + g.punktyRazem + "\t" + g.ileMeczy + "\t" + g.ileDyskwalifikacji);
 			}
 
 			w.Close();
@@ -351,39 +374,30 @@ namespace Odpalarka
 			WypiszWyniki(zrobRanking(zbierzWyniki(Paths.wyniki2)), Paths.serverDirectory + "WynikiDrugiejFazy.txt");
 		}
 
+		void wypiszLadniej()
+		{
+			Dictionary<string, StatystykiGracza> wyniki1 = zbierzWyniki(Paths.wyniki1);
+			Dictionary<string, StatystykiGracza> wyniki2 = zbierzWyniki(Paths.wyniki2);
+
+			WypiszWyniki(zrobRanking(wyniki1), Paths.serverDirectory + "WynikiFazyPierwszej.txt");
+			WypiszWyniki(zrobRanking(wyniki2), Paths.serverDirectory + "WynikiFazyDrugiej.txt");
+
+			foreach (var w in wyniki2)
+			{
+				wyniki1[w.Key].Dodaj(w.Value);
+			}
+			WypiszWyniki(zrobRanking(wyniki1), Paths.serverDirectory + "WynikiSumaryczne.txt");
+		}
+
 		private void Window_Loaded_1(object sender, RoutedEventArgs e)
 		{
+			wypiszLadniej();
 			//zbierzWyniki(Paths.serverDirectory + "wielkiArkuszWynikow.txt");
-			oficjalnyTurniej();
+			//oficjalnyTurniej();
 			return;
  			//przerob();
  			//return;
 
-			List<string> programy = new List<string>();
-			foreach(string dir in Directory.EnumerateDirectories(Paths.playersDirectory))
-			{
-				foreach (string file in Directory.EnumerateFiles(dir))
-				{
-					if(file.EndsWith("jar"))
-						programy.Add(file);
-
-				}
-			}
-
-			foreach (string gracz in programy)
-			{
-// 				if (!gracz.Contains("Malkiewicz"))
-// 					continue;
-
-				for(int i = 0; i < 10; i++)
-				{
-					Turniej t;
-					t.gracz = new PlayerInfo(gracz);
-					t.rozegraj();
-				}
-			}
-
-			Close();
 		}
 	}
 }
